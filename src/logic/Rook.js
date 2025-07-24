@@ -36,4 +36,8 @@ class Rook extends Piece {
     getValue() {
         return 5;
     }
+
+    clone() {
+        return new Rook(this._color);
+    }
 }

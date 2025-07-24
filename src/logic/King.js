@@ -11,7 +11,7 @@ class King extends Piece {
         ]
 
         const moves = [];
-        
+
         for (const [dx, dy] of directions) {
             let r = row + dx;
             let c = col + dy;
@@ -32,4 +32,8 @@ class King extends Piece {
     getValue() {
         return 0;
     }
-}
+
+    clone() {
+        return new King(_color);
+    }
+} 

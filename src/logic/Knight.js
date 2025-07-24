@@ -31,4 +31,8 @@ class Knight extends Piece {
     getValue() {
         return 3;
     }
+
+    clone() {
+        return new Knight(this._color);
+    }
 }

@@ -37,4 +37,8 @@ class Queen extends Piece {
     getValue() {
         return 9;
     }
+
+    clone() {
+        return new Queen(this._color);
+    }
 }

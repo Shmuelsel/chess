@@ -39,4 +39,8 @@ class Pawn extends Piece {
     getValue() {
         return 1;
     }
+
+    clone() {
+        return new Pawn(this._color);
+    }
 }

@@ -1,14 +1,14 @@
 import { PieceColor, Piecetype } from "./pieceConstants.js";
 
-class Piece {
-    #type;
-    #color;
-    #hasMoved;
+export class Piece {
+    _type;
+    _color;
+    _hasMoved;
 
     constructor(type, color) {
-        this.#type = type;
-        this.#color = this.color;
-        this.#hasMoved = false;
+        this._type = type;
+        this._color = color;
+        this._hasMoved = false;
     }
 
     getLegalMoves(row, col, board){
@@ -20,22 +20,24 @@ class Piece {
     }
 
     getPieceKey(){
-        return this.#type + this.#color;
+        return this._type + this._color;
     }
 
     getType(){
-        return this.#type;
+        return this._type;
     }
 
     getColor(){
-        return this.#color
+        return this._color
     }
 
     getHassMoved(){
-        return this.#hasMoved
+        return this._hasMoved
     }
 
     setHassMoved(bool){
-        this.#hasMoved = bool
+        this._hasMoved = bool
     }
+
+    
 }

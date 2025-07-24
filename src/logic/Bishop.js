@@ -37,4 +37,8 @@ class Bishop extends Piece {
     getValue() {
         return 3;
     }
+
+    clone() {
+        return new Bishop(this._color);
+    }
 }
