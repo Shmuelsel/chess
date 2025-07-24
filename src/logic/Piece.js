@@ -8,6 +8,7 @@ class Piece {
     constructor(type, color) {
         this.#type = type;
         this.#color = this.color;
+        this.#hasMoved = false;
     }
 
     getLegalMoves(row, col, board){
