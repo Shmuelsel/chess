@@ -1,8 +1,9 @@
 import { Square } from "./Square";
-class Board {
+export class Board {
     #squares = [];
     constructor() {
         this.#squares = Array.from({ length: 8 }, () => Array(8).fill(null));
+        this.initializeBoard();
     }
 
     initializeBoard() {
@@ -67,7 +68,22 @@ class Board {
         this.initializeBoard();
     }
 
-   
+    getPieceKey(piece){
+        if (!piece) return null;
+        return piece.getKey();
+    }
 
+    getPieceOfColor(color){
+        const pieces = [];
+        for (let row = 0; row < 8; row++) {
+            for (let col = 0; col < 8; col++) {
+                const piece = this.#squares[row][col].getPiece();
+                if (piece && piece.getColor() === color) {
+                    pieces.push(piece);
+                }
+            }
+        }
+        return pieces;
+    }
 
 }

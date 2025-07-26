@@ -1,4 +1,4 @@
-import { Piecetype } from "./pieceConstants";
+import { PieceType } from "./pieceConstants";
 class Pawn extends Piece {
     constructor(color) {
         super(color, Piecetype.PAWN);

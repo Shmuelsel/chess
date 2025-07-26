@@ -3,7 +3,7 @@ export const PieceColor = {
     BLACK: 'b',
 };
 
-export const Piecetype = {
+export const PieceType = {
     KING: 'k',
     QUEEN: 'q',
     ROOK: 'r',

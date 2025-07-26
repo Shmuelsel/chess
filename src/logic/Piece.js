@@ -1,4 +1,4 @@
-import { PieceColor, Piecetype } from "./pieceConstants.js";
+import { PieceColor, PieceType } from "./pieceConstants.js";
 
 export class Piece {
     _type;
@@ -31,12 +31,16 @@ export class Piece {
         return this._color
     }
 
-    getHassMoved(){
+    getHasMoved(){
         return this._hasMoved
     }
 
-    setHassMoved(bool){
+    setHasMoved(bool){
         this._hasMoved = bool
+    }
+
+    getKey() {
+        return this._type + this._color;
     }
 
     
