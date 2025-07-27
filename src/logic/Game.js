@@ -63,7 +63,9 @@ export class Game{
         this.#moveHistory.push(move);
     }
 
-    
+    getBoard() {
+        return this.#board;
+    }
 
 
 }

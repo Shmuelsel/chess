@@ -16,4 +16,8 @@ export class Square {
     clone() {
         return new Square(this.row, this.col, this.piece ? this.piece.clone() : null);
     }
+
+    isOccupied() {
+        return this.piece !== null;
+    }
 }

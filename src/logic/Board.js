@@ -40,6 +40,9 @@ export class Board {
         this.#squares[row][col].setPiece(piece);
     }
         
+    getSquares() {
+        return this.#squares;
+    }
 
     getSquare(row, col) {
         return this.#squares[row][col];
