@@ -1,12 +1,13 @@
-import { Piecetype } from "./pieceConstants";
-class Rook extends Piece {
+import { Piecetype } from "../pieceConstants";
+class Queen extends Piece {
     constructor(color) {
-        super(color, Piecetype.ROOK);
+        super(color, Piecetype.QUEEN);
     }
 
     getLegalMoves(row, col, board) {
         const directions = [
-            [1, 0], [-1, 0], [0, 1], [0, -1]
+            [1, 0], [-1, 0], [0, 1], [0, -1],
+            [1, 1], [-1, -1], [1, -1], [-1, 1]
         ];
 
         const moves = [];
@@ -34,10 +35,10 @@ class Rook extends Piece {
     }
 
     getValue() {
-        return 5;
+        return 9;
     }
 
     clone() {
-        return new Rook(this._color);
+        return new Queen(this._color);
     }
 }

@@ -1,7 +1,7 @@
-import { PieceType } from "./pieceConstants";
+import { PieceType } from "../pieceConstants";
 class Pawn extends Piece {
     constructor(color) {
-        super(color, Piecetype.PAWN);
+        super(color, PieceType.PAWN);
     }
 
     getLegalMoves(row, col, board) {
@@ -26,14 +26,21 @@ class Pawn extends Piece {
             moves.push([row + direction, col + 1]);
         }
 
-        // Check for en passant (not implemented here, but could be added)
 
 
         return moves;
     }
 
     getThreatMoves(row, col, board) {
-        return this.getLegalMoves(row, col, board);
+        treatMoves = [];
+        const direction = this.color === PieceColor.WHITE ? 1 : -1;
+        if (col > 0 && row + direction >= 0 && row + direction < 8) {
+            treatMoves.push([row + direction, col - 1]);
+        }
+        if (col < 7 && row + direction >= 0 && row + direction < 8) {
+            treatMoves.push([row + direction, col + 1]);
+        }
+        return treatMoves;
     }
 
     getValue() {

@@ -1,7 +1,7 @@
 import { Board } from "./Board.js";
 
 
-class Game{
+export class Game{
     #board;
     #moveHistory = [];
     #currentTurn = 'w';
@@ -57,6 +57,10 @@ class Game{
             return [];
         }
         return piece.getLegalMoves(row, col, this.#board);
+    }
+
+    addMoveToHistory(move) {
+        this.#moveHistory.push(move);
     }
 
     

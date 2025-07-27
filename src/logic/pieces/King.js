@@ -1,4 +1,4 @@
-import { PieceColor, Piecetype } from "./pieceConstants.js"
+import { PieceColor, Piecetype } from "../pieceConstants.js"
 class King extends Piece {
     constructor(color) {
         super(color, Piecetype.KING)

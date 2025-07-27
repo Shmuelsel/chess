@@ -1,4 +1,5 @@
 import { Square } from "./Square";
+import { Piece } from "./pieces/Piece";
 export class Board {
     #squares = [];
     constructor() {

@@ -1,4 +1,4 @@
-import { PieceColor, PieceType } from "./pieceConstants.js";
+import { PieceColor, PieceType } from "../pieceConstants.js";
 
 export class Piece {
     _type;

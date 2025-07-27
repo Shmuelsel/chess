@@ -1,4 +1,4 @@
-import { Piecetype } from "./pieceConstants";
+import { Piecetype } from "../pieceConstants";
 class Bishop extends Piece {
     constructor(color) {
         super(color, Piecetype.Bishop)
