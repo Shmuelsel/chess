@@ -3,18 +3,19 @@ import { Game } from "../logic/Game";
 import Square from "./Square";
 import "./Board.css"
 
-const Board = ({ board, onSquareClick }) => {
+const Board = ({ board, handleSquareClick }) => {
 
   return (
     <div className="board">
       {board.getSquares().map((row, rowIndex) => (
         <div key={rowIndex} className={"board-row"}>
           {row.map((square, colIndex) => (
-            <div key={`${rowIndex}-${colIndex}`} className={`square${ (rowIndex + colIndex) % 2 === 0 ? 'White' : 'Black'}`}>
+            <div key={`${rowIndex}-${colIndex}`} >
+              {console.log(square)}
                 <Square
                     key={`${rowIndex}-${colIndex}`}
                     square={square}
-                    onClick={() => onSquareClick(rowIndex, colIndex)}
+                    onClick={() => handleSquareClick(rowIndex, colIndex)}
                     row={rowIndex}
                     col={colIndex}
                 />

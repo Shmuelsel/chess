@@ -8,6 +8,13 @@ export class Board {
     }
 
     initializeBoard() {
+        for (let row = 0; row < 8; row++) {
+            for (let col = 0; col < 8; col++) {
+                this.#squares[row][col] = new Square(row, col);
+            }
+        }
+
+
         for (let col = 0; col < 8; col++) {
             this.#squares[1][col] = new Square(1, col, new Piece('b', 'p')); // Black pawns
             this.#squares[6][col] = new Square(6, col, new Piece('w', 'p')); // White pawns
@@ -39,7 +46,7 @@ export class Board {
     setPiece(row, col, piece) {
         this.#squares[row][col].setPiece(piece);
     }
-        
+
     getSquares() {
         return this.#squares;
     }
@@ -72,12 +79,12 @@ export class Board {
         this.initializeBoard();
     }
 
-    getPieceKey(piece){
+    getPieceKey(piece) {
         if (!piece) return null;
         return piece.getKey();
     }
 
-    getPieceOfColor(color){
+    getPieceOfColor(color) {
         const pieces = [];
         for (let row = 0; row < 8; row++) {
             for (let col = 0; col < 8; col++) {

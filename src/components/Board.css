@@ -1,11 +1,11 @@
 .board {
-  display: grid;
-  grid-template-columns: repeat(8, 1fr); /* 8 עמודות שוות */
-  grid-template-rows: repeat(8, 1fr);    /* 8 שורות שוות */
-  gap: 0; /* אין רווחים בין המשבצות */
-  width: 400px; /* אפשר לשנות לפי גודל */
+  width: 400px; 
   height: 400px;
   border: 2px solid black;
+}
+
+.board-row{
+  display: flex;
 }
 
 .square {
@@ -17,14 +17,14 @@
   width: 50px;
 }
 
+.square.white {
+  background-color: #e7d4c0;
+}
+
+.square.black {
+  background-color: #6e3707;
+}
+
 .square:hover {
   background-color: #c3c0be;
-}
-
-.squareWhite {
-  background-color: #be9d7b;
-}
-
-.squareBlack {
-  background-color: #6e3707;
 }

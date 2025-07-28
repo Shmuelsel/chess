@@ -1,14 +1,14 @@
-import { Piece } from "../logic/pieces/Piece";
+//import { Piece as PieceLogic } from "../logic/pieces/Piece";
 import { PieceColor, PieceType } from "../logic/pieceConstants";
 import React from "react";
-import "./Piece.css";
+//import "./Piece.css";
 
-const PieceComponent = ({ piece, row, col }) => {
-    const pieceClass = `piece ${piece.getColor().toLowerCase()}-${piece.getType().toLowerCase()}`;
-    
+const PieceComponent = ({ piece }) => {
+    const type = piece.getType();
+    const color = piece.getColor();
     return (
-        <div className={pieceClass} style={{ top: row * 60, left: col * 60 }}>
-        {piece.getType().charAt(0).toUpperCase()}
-        </div>
+        <span className={`piece ${color}`}>{color}{type}</span>
     );
-    }
+}
+
+export default PieceComponent;

@@ -5,7 +5,7 @@ export class Piece {
     _color;
     _hasMoved;
 
-    constructor(type, color) {
+    constructor(color, type) {
         this._type = type;
         this._color = color;
         this._hasMoved = false;
