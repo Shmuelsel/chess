@@ -26,5 +26,13 @@
 }
 
 .square:hover {
-  background-color: #c3c0be;
+  background-color: rgba(255, 0, 0, 0.3);
+}
+
+.square.selected {
+  background-color: #ca3e14;
+}
+
+.square.highlighted {
+  background-color: rgba(0, 255, 0, 0.13);
 }

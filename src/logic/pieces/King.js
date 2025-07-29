@@ -1,7 +1,10 @@
-import { PieceColor, Piecetype } from "../pieceConstants.js"
-class King extends Piece {
+import { PieceColor, PieceType } from "../pieceConstants.js"
+import { Piece } from "./Piece";
+
+
+export class King extends Piece {
     constructor(color) {
-        super(color, Piecetype.KING)
+        super(color, PieceType.KING)
     }
 
     getLegalMoves(row, col, board) {
@@ -15,18 +18,18 @@ class King extends Piece {
         for (const [dx, dy] of directions) {
             let r = row + dx;
             let c = col + dy;
-            // if (r >= 0 && r < 8 && c >= 0 && c < 8) {
-            //     if ((!board.getSquare(r, c).isOccupied() || board.getSquare(r, c).getPiece() -> getColor() != color) && !board.getSquare(r, c).getThreatened()) {
-            //         moves.push([dx, dy])
-            //     }
-            // }
+            if (r >= 0 && r < 8 && c >= 0 && c < 8) {
+                if ((!board.getSquare(r, c).isOccupied() || board.getSquare(r, c).getPiece().getColor() !== this.color) && !board.getSquare(r, c).getThreatened()) {
+                    moves.push([dx, dy])
+                }
+            }
         }
         return moves;
     }
 
 
     getThreatMoves(row, col, board) {
-        return getLegalMoves(row, col, board);
+        return this.getLegalMoves(row, col, board);
     }
 
     getValue() {
@@ -34,6 +37,6 @@ class King extends Piece {
     }
 
     clone() {
-        return new King(_color);
+        return new King(this.color);
     }
 } 

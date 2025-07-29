@@ -1,7 +1,10 @@
-import { Piecetype } from "../pieceConstants";
-class Knight extends Piece {
+import { PieceType } from "../pieceConstants";
+import { Piece } from "./Piece";
+
+
+export class Knight extends Piece {
     constructor(color) {
-        super(color, Piecetype.KNIGHT);
+        super(color, PieceType.KNIGHT);
     }
 
     getLegalMoves(row, col, board) {
@@ -15,10 +18,10 @@ class Knight extends Piece {
             const r = row + dx;
             const c = col + dy;
             if (r >= 0 && r < 8 && c >= 0 && c < 8) {
-                // if (!board.getSquare(r, c).isOccupied() || 
-                //     board.getSquare(r, c).getPiece().getColor() !== this.color) {
+                if (!board.getSquare(r, c).isOccupied() || 
+                    board.getSquare(r, c).getPiece().getColor() !== this._color) {
                 moves.push([r, c]);
-                // }
+                }
             }
         }
         return moves;

@@ -1,4 +1,5 @@
 import { Board } from "./Board.js";
+import { Piece } from "./pieces/Piece.js";
 
 
 export class Game{
@@ -65,6 +66,26 @@ export class Game{
 
     getBoard() {
         return this.#board;
+    }
+
+    movePiece(fromRow, fromCol, toRow, toCol) {
+        const piece = this.#board.getPiece(fromRow, fromCol);
+        if (!piece || piece.getColor() !== this.#currentTurn) {
+            console.error("Invalid move: No piece at the source square or not your turn.");
+            return;
+        }
+
+        // Move the piece
+        this.#board.setPiece(toRow, toCol, piece);
+        this.#board.setPiece(fromRow, fromCol, null);
+        this.addMoveToHistory({ from: { row: fromRow, col: fromCol }, to: { row: toRow, col: toCol } });
+
+        // Switch turns
+        this.switchTurn();
+    }
+
+    switchTurn() {
+        this.#currentTurn = this.#currentTurn === 'w' ? 'b' : 'w';
     }
 
 

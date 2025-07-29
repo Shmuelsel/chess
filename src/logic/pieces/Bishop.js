@@ -1,7 +1,9 @@
-import { Piecetype } from "../pieceConstants";
-class Bishop extends Piece {
+import { PieceType } from "../pieceConstants";
+import { Piece } from "./Piece";
+
+export class Bishop extends Piece {
     constructor(color) {
-        super(color, Piecetype.Bishop)
+        super(color, PieceType.BISHOP)
     }
 
     getLegalMoves(row, col, board) {
@@ -15,15 +17,15 @@ class Bishop extends Piece {
             let r = row + dx;
             let c = col + dy;
             while (r >= 0 && r < 8 && c >= 0 && c < 8) {
-                // if (board.getSquare(r, c).isOccupied()) {
-                //     if (board.getSquare(r, c).getPiece() -> getColor() != color) {
-                //         moves.emplace_back(r, c);
-                //     }
-                //     break;
-                // }
+                if (board.getSquare(r, c).isOccupied()) {
+                    if (board.getSquare(r, c).getPiece().getColor() !== this._color) {
+                        moves.push(r, c);
+                    }
+                    break;
+                }
                 moves.push([r,c]);
-                r += dir[0];
-                c += dir[1];
+                r += dx;
+                c += dy;
             }
         }
         return moves;
@@ -31,7 +33,7 @@ class Bishop extends Piece {
 
 
     getThreatMoves(row, col, board) {
-        return getLegalMoves(row, col, board);
+        return this.getLegalMoves(row, col, board);
     }
 
     getValue() {

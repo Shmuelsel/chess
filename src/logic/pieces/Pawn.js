@@ -1,16 +1,18 @@
-import { PieceType } from "../pieceConstants";
-class Pawn extends Piece {
+import { PieceType, PieceColor } from "../pieceConstants";
+import { Piece } from "./Piece";
+
+export class Pawn extends Piece {
     constructor(color) {
         super(color, PieceType.PAWN);
     }
 
     getLegalMoves(row, col, board) {
         const moves = [];
-        const direction = this.color === PieceColor.WHITE ? 1 : -1;
-        const startRow = this.color === PieceColor.WHITE ? 1 : 6;
+        const direction = this._color === PieceColor.WHITE ? -1 : 1;
+        const startRow = this._color === PieceColor.WHITE ? 6 : 1;
 
         // Move forward by one square
-        if (row + direction >= 0 && row + direction < 8) {
+        if (row + direction >= 0 && row + direction < 8 && !board.getSquare(row + direction, col).isOccupied()) {
             moves.push([row + direction, col]);
             // If on starting row, can move two squares forward
             if (row === startRow && row + 2 * direction >= 0 && row + 2 * direction < 8) {
@@ -19,20 +21,18 @@ class Pawn extends Piece {
         }
 
         // Capture diagonally
-        if (col > 0 && row + direction >= 0 && row + direction < 8) {
-            moves.push([row + direction, col - 1]);
+        if (col > 0 && row + direction >= 0 && row + direction < 8 && board.getSquare(row + direction, col - 1).isOccupied() &&
+            board.getSquare(row + direction, col - 1).getPiece().getColor() !== this._color) {
+            moves.push([row + direction, col - 1]);            
         }
-        if (col < 7 && row + direction >= 0 && row + direction < 8) {
+        if (col < 7 && row + direction >= 0 && row + direction < 8 && board.getSquare(row + direction, col + 1).isOccupied()) {
             moves.push([row + direction, col + 1]);
         }
-
-
-
         return moves;
     }
 
     getThreatMoves(row, col, board) {
-        treatMoves = [];
+        var treatMoves = [];
         const direction = this.color === PieceColor.WHITE ? 1 : -1;
         if (col > 0 && row + direction >= 0 && row + direction < 8) {
             treatMoves.push([row + direction, col - 1]);

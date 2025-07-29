@@ -1,7 +1,10 @@
-import { Piecetype } from "../pieceConstants";
-class Rook extends Piece {
+import { PieceType } from "../pieceConstants";
+import { Piece } from "./Piece";
+
+
+export class Rook extends Piece {
     constructor(color) {
-        super(color, Piecetype.ROOK);
+        super(color, PieceType.ROOK);
     }
 
     getLegalMoves(row, col, board) {
@@ -15,12 +18,12 @@ class Rook extends Piece {
             let r = row + dx;
             let c = col + dy;
             while (r >= 0 && r < 8 && c >= 0 && c < 8) {
-                // if (board.getSquare(r, c).isOccupied()) {
-                //     if (board.getSquare(r, c).getPiece().getColor() !== this.color) {
-                //         moves.push([r, c]);
-                //     }
-                //     break;
-                // }
+                if (board.getSquare(r, c).isOccupied()) {
+                    if (board.getSquare(r, c).getPiece().getColor() !== this._color) {
+                        moves.push([r, c]);
+                    }
+                    break;
+                }
                 moves.push([r, c]);
                 r += dx;
                 c += dy;
