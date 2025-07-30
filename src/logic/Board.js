@@ -59,6 +59,10 @@ export class Board {
     }
 
     getSquare(row, col) {
+        //console.log(`Getting square at Row ${row}, Col ${col}`);
+        //console.log(this.#squares);
+        
+        
         return this.#squares[row][col];
     }
 
@@ -102,6 +106,35 @@ export class Board {
             }
         }
         return pieces;
+    }
+
+    getThreatenedSquares(color) {
+        //console.log(color);
+        
+        const threatenedSquares = [];
+        for (let row = 0; row < 8; row++) {
+            for (let col = 0; col < 8; col++) {
+                const piece = this.getPiece(row, col);
+                console.log(piece, piece && piece.getColor());
+                
+                if (piece && piece.getColor() === color) {
+                    //console.log(piece.getColor());
+                    //console.log(color);
+                    //console.log(true);
+                    
+                    const threatMoves = piece.getThreatMoves(row, col, this);
+                    //console.log(piece);
+                    
+                    console.log(threatMoves);
+                    
+                    
+                    for (const [r, c] of threatMoves) {
+                        threatenedSquares.push([r, c]);
+                    }
+                }
+            }
+        }
+        return threatenedSquares;
     }
 
 }

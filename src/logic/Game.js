@@ -81,7 +81,7 @@ export class Game{
         this.addMoveToHistory({ from: { row: fromRow, col: fromCol }, to: { row: toRow, col: toCol } });
 
         // Switch turns
-        this.switchTurn();
+        
     }
 
     switchTurn() {

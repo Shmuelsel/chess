@@ -10,49 +10,38 @@ const GameComponent = ({ onBack }) => {
     const [selectedSquare, setSelectedSquare] = React.useState(null);
     const [selectedPiece, setSelectedPiece] = React.useState(null);
     const [validMoves, setValidMoves] = React.useState([]);
+    const [treatenedSquares, setThreatenedSquares] = React.useState([]);
 
     const handleSquareSelection = (row, col) => {
         if (selectedPiece) {
-            // if (game.getBoard().getSquare(row, col).isOccupied() && game.getBoard().getSquare(row, col).getPiece().getColor() === selectedPiece.getColor()) {
-            //     console.log(`Selecting piece at Row ${row}, Col ${col}`);
-            //     const square = game.getBoard().getSquare(row, col);
-            //     const piece = square.getPiece();
-            //     const leagalMoves = piece.getLegalMoves(row, col, game.getBoard());
-            //     console.log(`Legal moves for selected piece: ${leagalMoves}`);
-
-            //     if (leagalMoves.length <= 0) {
-            //         console.error("No valid moves for the selected piece.");
-            //         return;
-            //     }
-            //     setValidMoves(piece.getLegalMoves(row, col, game.getBoard()))
-            //     setSelectedSquare({ row, col });
-            //     setSelectedPiece(piece);
-            //     console.log(`Selected piece: ${piece.getType()} at Row ${row}, Col ${col}`);
-            // }
             const isValid = validMoves.some(move => move[0] === row && move[1] === col);
             validMoves.forEach(move => {
             });
             if (!isValid) {
-                console.log("not valid");
-                console.log(row, col);
+                //console.log("not valid");
+                //console.log(row, col);
             }
             else {
-                console.log(`Moving piece: ${selectedPiece.getType()} from Row ${selectedSquare.row}, Col ${selectedSquare.col} to Row ${row}, Col ${col}`);
+                //console.log(`Moving piece: ${selectedPiece.getType()} from Row ${selectedSquare.row}, Col ${selectedSquare.col} to Row ${row}, Col ${col}`);
                 game.movePiece(selectedSquare.row, selectedSquare.col, row, col);
+                console.error(game.getBoard().getSquare(row, col).getPiece().getThreatMoves());
+                
                 setSelectedPiece(null);
                 setSelectedSquare(null);
                 setValidMoves([]);
-
+                setThreatenedSquares(game.getBoard().getThreatenedSquares(game.getCurrentTurn()));
+                console.log(treatenedSquares);
+                game.switchTurn();
+                
+                
             }
-
-            // return;
         }
         if (game.getBoard().getSquare(row, col).isOccupied() && game.getBoard().getSquare(row, col).getPiece().getColor() === game.getCurrentTurn()) {
-            console.log(`Selecting piece at Row ${row}, Col ${col}`);
+            //console.log(`Selecting piece at Row ${row}, Col ${col}`);
             const square = game.getBoard().getSquare(row, col);
             const piece = square.getPiece();
             const leagalMoves = piece.getLegalMoves(row, col, game.getBoard());
-            console.log(`Legal moves for selected piece: ${leagalMoves}`);
+            //console.log(`Legal moves for selected piece: ${leagalMoves}`);
 
             if (leagalMoves.length <= 0) {
                 console.error("No valid moves for the selected piece.");
@@ -61,7 +50,7 @@ const GameComponent = ({ onBack }) => {
             setValidMoves(piece.getLegalMoves(row, col, game.getBoard()))
             setSelectedSquare({ row, col });
             setSelectedPiece(piece);
-            console.log(`Selected piece: ${piece.getType()} at Row ${row}, Col ${col}`);
+            //console.log(`Selected piece: ${piece.getType()} at Row ${row}, Col ${col}`);
         }
     };
 
@@ -69,7 +58,13 @@ const GameComponent = ({ onBack }) => {
 
         <div className="game">
             <button onClick={onBack}> its start of new age</button>
-            <Board board={game.getBoard()} handleSquareClick={handleSquareSelection} isSelected={selectedSquare} highlightedSq={validMoves} />
+            <Board
+                board={game.getBoard()}
+                handleSquareClick={handleSquareSelection}
+                isSelected={selectedSquare}
+                highlightedSq={validMoves}
+                treatenedSq={treatenedSquares}
+            />
         </div>
     );
 };

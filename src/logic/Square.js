@@ -1,4 +1,10 @@
 export class Square {
+    row;
+    col;
+    piece;
+    isOccupied;
+    isTreatend;
+
     constructor(row, col, piece = null) {
         this.row = row;
         this.col = col;
@@ -19,5 +25,9 @@ export class Square {
 
     isOccupied() {
         return this.piece !== null;
+    }
+
+    getThreatened() {
+        return this.isTreatend;
     }
 }

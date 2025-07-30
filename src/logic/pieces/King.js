@@ -19,8 +19,10 @@ export class King extends Piece {
             let r = row + dx;
             let c = col + dy;
             if (r >= 0 && r < 8 && c >= 0 && c < 8) {
-                if ((!board.getSquare(r, c).isOccupied() || board.getSquare(r, c).getPiece().getColor() !== this.color) && !board.getSquare(r, c).getThreatened()) {
-                    moves.push([dx, dy])
+                if ((!board.getSquare(r, c).isOccupied() ||
+                    board.getSquare(r, c).getPiece().getColor() !== this._color) &&
+                    !board.getSquare(r, c).getThreatened()) {
+                    moves.push([r, c])
                 }
             }
         }

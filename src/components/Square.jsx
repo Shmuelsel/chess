@@ -3,13 +3,18 @@ import { Square as SquareLogic } from "../logic/Square";
 import "./Square.css";
 import PieceComponent from "./Piece";
 
-const Square = ({ isSelected, onClick, square, row, col, isHighlighted }) => {
-  const squareClass = `square ${(row + col) % 2 === 0 ? 'white' : 'black'} ${isSelected ? 'selected' : ''} ${isHighlighted ? 'highlighted' : ''}`;
+const Square = ({ isSelected, onClick, square, row, col, isHighlighted, isTreatened }) => {
+  const squareClass = `square ${(row + col) % 2 === 0 ? 'white' : 'black'} 
+                              ${isSelected ? 'selected' : ''}
+                              ${isHighlighted ? 'highlighted' : ''}
+                              ${isTreatened ? 'treatened' : ''}`;
+                              
+
   const piece = square.getPiece();
   
 
   const handleClick = () => {
-    console.log(`Square clicked: Row ${row}, Col ${col}`);
+    //console.log(`Square clicked: Row ${row}, Col ${col}`);
     onClick()
   }
 

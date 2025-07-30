@@ -23,7 +23,7 @@ export class Pawn extends Piece {
         // Capture diagonally
         if (col > 0 && row + direction >= 0 && row + direction < 8 && board.getSquare(row + direction, col - 1).isOccupied() &&
             board.getSquare(row + direction, col - 1).getPiece().getColor() !== this._color) {
-            moves.push([row + direction, col - 1]);            
+            moves.push([row + direction, col - 1]);
         }
         if (col < 7 && row + direction >= 0 && row + direction < 8 && board.getSquare(row + direction, col + 1).isOccupied()) {
             moves.push([row + direction, col + 1]);
@@ -32,15 +32,19 @@ export class Pawn extends Piece {
     }
 
     getThreatMoves(row, col, board) {
-        var treatMoves = [];
-        const direction = this.color === PieceColor.WHITE ? 1 : -1;
-        if (col > 0 && row + direction >= 0 && row + direction < 8) {
-            treatMoves.push([row + direction, col - 1]);
+        console.error(row, col);
+        var threatMoves = [];
+        var direction = this._color === PieceColor.WHITE ? -1 : 1;
+        for (var dc = -1; dc <= 1; dc += 2) { // Check left and right captures
+            if (col + dc >= 0 && col + dc < 8) {
+                if (row + direction >= 0 && row + direction < 8) {
+                    threatMoves.push([row + direction, col + dc]);
+                }
+            }
         }
-        if (col < 7 && row + direction >= 0 && row + direction < 8) {
-            treatMoves.push([row + direction, col + 1]);
-        }
-        return treatMoves;
+        //console.log(threatMoves);
+        
+        return threatMoves;
     }
 
     getValue() {
