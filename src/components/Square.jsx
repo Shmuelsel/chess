@@ -9,29 +9,27 @@ const Square = ({ isSelected, onClick, square, row, col, isHighlighted, isTreate
                               ${isSelected ? 'selected' : ''}
                               ${isHighlighted ? 'highlighted' : ''}
                               ${isTreatened ? 'treatened' : ''}
-                              ${isTreatened && square.getPiece() && square.getPiece().getType() === 'k' ? 'check'  : ''}`;
-                              
+                              ${isTreatened && square.getPiece() && square.getPiece().getType() === 'k' ? 'check' : ''}`;
+
 
   const piece = square.getPiece();
-  
-  
-//{console.log(square);}
   const handleClick = () => {
-    //console.log(`Square clicked: Row ${row}, Col ${col}`);
     onClick()
   }
 
- 
   return (
     <div className={`square${row}-${col}`}>
-    <div
-    
-      className={squareClass}
-      onClick={handleClick}
-    >
-      {piece && (<PieceComponent piece={piece}/>
-      ) }
-    </div></div>
+      <div className={squareClass} onClick={handleClick} >
+        {piece && piece.getType() === 'p' && (
+          <img
+            src="../assets/images/vs.jpg"
+            alt="vs"
+            className="piece-image"
+          />
+        )}
+        {piece && (<PieceComponent piece={piece} />)}
+      </div>
+    </div>
   );
 };
 

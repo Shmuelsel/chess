@@ -91,7 +91,7 @@ export class Game{
     }
 
     getKingPosition() {
-        return this.#kingPos[this.#currentTurn];
+        return this.#kingPos;
     }
 
     updateKingPosition(row, col) {
