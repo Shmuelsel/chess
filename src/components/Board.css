@@ -30,7 +30,7 @@
 }
 
 .square.selected {
-  background-color: #ca3e14;
+  background-color: rgba(0, 0, 255, 0.13);
 }
 
 .square.highlighted {
@@ -39,4 +39,8 @@
 
 .square.treatened {
   background-color: rgba(255, 0, 0, 0.13);
+}
+
+.square.check {
+  background-color: rgba(245, 4, 4, 0.89);
 }

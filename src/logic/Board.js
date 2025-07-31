@@ -115,7 +115,7 @@ export class Board {
         for (let row = 0; row < 8; row++) {
             for (let col = 0; col < 8; col++) {
                 const piece = this.getPiece(row, col);
-                console.log(piece, piece && piece.getColor());
+                //console.log(piece, piece && piece.getColor());
                 
                 if (piece && piece.getColor() === color) {
                     //console.log(piece.getColor());
@@ -125,7 +125,7 @@ export class Board {
                     const threatMoves = piece.getThreatMoves(row, col, this);
                     //console.log(piece);
                     
-                    console.log(threatMoves);
+                    //console.log(threatMoves);
                     
                     
                     for (const [r, c] of threatMoves) {

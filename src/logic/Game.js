@@ -9,7 +9,7 @@ export class Game{
     #gameOver = false;
     #winner = null;
     #draw = false;
-    #kingPos;
+    #kingPos = { w: { x: 4, y: 0 }, b: { x: 4, y: 7 } };
     #treatMoves = [];
 
 
@@ -48,8 +48,10 @@ export class Game{
     }
 
     isInCheck() {
-        // Logic to determine if the current player is in check
-
+        const kingPos = this.#kingPos[this.#currentTurn];
+        //console.error(kingPos);
+        
+        return this.#board.getThreatenedSquares(this.#currentTurn).some(sq => sq[0] === kingPos.y && sq[1] === kingPos.x);
     }
 
     getLegalMoves(row, col) {
@@ -86,6 +88,14 @@ export class Game{
 
     switchTurn() {
         this.#currentTurn = this.#currentTurn === 'w' ? 'b' : 'w';
+    }
+
+    getKingPosition() {
+        return this.#kingPos[this.#currentTurn];
+    }
+
+    updateKingPosition(row, col) {
+        this.#kingPos[this.#currentTurn] = { x: col, y: row };
     }
 
 

@@ -7,11 +7,12 @@ import "./Game.css";
 
 const GameComponent = ({ onBack }) => {
     const [game, setGame] = React.useState(new Game());
+    const [kingPosition, setKingPosition] = React.useState(game.getKingPosition());
     const [selectedSquare, setSelectedSquare] = React.useState(null);
     const [selectedPiece, setSelectedPiece] = React.useState(null);
     const [validMoves, setValidMoves] = React.useState([]);
     const [treatenedSquares, setThreatenedSquares] = React.useState([]);
-
+    const [check, setCheck] = React.useState({w : false, b: false});
     const handleSquareSelection = (row, col) => {
         if (selectedPiece) {
             const isValid = validMoves.some(move => move[0] === row && move[1] === col);
@@ -24,18 +25,26 @@ const GameComponent = ({ onBack }) => {
             else {
                 //console.log(`Moving piece: ${selectedPiece.getType()} from Row ${selectedSquare.row}, Col ${selectedSquare.col} to Row ${row}, Col ${col}`);
                 game.movePiece(selectedSquare.row, selectedSquare.col, row, col);
-                console.error(game.getBoard().getSquare(row, col).getPiece().getThreatMoves());
+                //console.error(game.getBoard().getSquare(row, col).getPiece().getThreatMoves());
                 
                 setSelectedPiece(null);
                 setSelectedSquare(null);
                 setValidMoves([]);
                 setThreatenedSquares(game.getBoard().getThreatenedSquares(game.getCurrentTurn()));
-                console.log(treatenedSquares);
+                //console.log(treatenedSquares);
                 game.switchTurn();
+                console.log(`Switched turn to: ${game.getCurrentTurn()}`);
+                console.log(game.isInCheck());
                 
                 
+                setCheck(prev => ({
+                    ...prev,
+                    [game.getCurrentTurn()]: game.isInCheck()
+                }));
+                console.log(kingPosition[game.getCurrentTurn()])
             }
         }
+        
         if (game.getBoard().getSquare(row, col).isOccupied() && game.getBoard().getSquare(row, col).getPiece().getColor() === game.getCurrentTurn()) {
             //console.log(`Selecting piece at Row ${row}, Col ${col}`);
             const square = game.getBoard().getSquare(row, col);
@@ -54,6 +63,12 @@ const GameComponent = ({ onBack }) => {
         }
     };
 
+    const isCheck = () => {
+        const kingPos = game.getKingPosition();
+        return treatenedSquares.some(sq => sq[0] === kingPos.y && sq[1] === kingPos.x);
+    }
+    console.log(kingPosition);
+    
     return (
 
         <div className="game">
