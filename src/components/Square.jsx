@@ -3,17 +3,23 @@ import { Square as SquareLogic } from "../logic/Square";
 import "./Square.css";
 import PieceComponent from "./Piece";
 import { PieceImages } from "../logic/pieceConstants";
+import { useTurn } from "./Game";
+
 
 
 const Square = ({ isSelected, onClick, square, row, col, isHighlighted, isThreatened, kingsPosition }) => {
-  const squareClass = `square ${(row + col) % 2 === 0 ? 'white' : 'black'} 
+  const piece = square.getPiece();
+  const {turn} = useTurn();
+  const squareClass = `square ${piece && piece.getColor() === turn ? 'occupied' : ''}
+                              ${(row + col) % 2 === 0 ? 'white' : 'black'} 
                               ${isSelected ? 'selected' : ''}
                               ${isHighlighted ? 'highlighted' : ''}
+                              ${isHighlighted && square.getPiece() ? 'eatable' : ''}
                               ${isThreatened ? 'threatened' : ''}
                               ${isThreatened && square.getPiece() && square.getPiece().getType() === 'k' ? 'check' : ''}`;
 
 
-  const piece = square.getPiece();
+  
   const handleClick = () => {
     onClick()
   }

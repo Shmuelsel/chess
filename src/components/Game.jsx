@@ -1,9 +1,14 @@
-import React from "react";
+// import React from "react";
+import React, { createContext, useContext} from "react";
 import { Game } from "../logic/Game";
 import { Board as boardLogic } from "../logic/Board";
 import Board from "./Board";
 import "./Game.css";
 
+export const TurnContext = createContext();
+export const useTurn = () => {
+    return useContext(TurnContext);
+}
 
 const GameComponent = ({ onBack }) => {
     const [game, setGame] = React.useState(new Game());
@@ -13,7 +18,9 @@ const GameComponent = ({ onBack }) => {
     const [validMoves, setValidMoves] = React.useState([]);
     const [threatenedSquares, setThreatenedSquares] = React.useState([]);
     const [check, setCheck] = React.useState({ w: false, b: false });
+    const [turn, setTurn] = React.useState(game.getCurrentTurn());
 
+    
 
     const handleSquareSelection = (row, col) => {
         if (selectedPiece) {
@@ -30,6 +37,7 @@ const GameComponent = ({ onBack }) => {
                 setValidMoves([]);
                 setThreatenedSquares(game.getBoard().getThreatenedSquares(game.getCurrentTurn()));
                 game.switchTurn();
+                setTurn(game.getCurrentTurn());
                 console.log(`Switched turn to: ${game.getCurrentTurn()}`);
 
 
@@ -61,6 +69,7 @@ const GameComponent = ({ onBack }) => {
     }
 
     return (
+        <TurnContext.Provider value={{ turn, setTurn }}>
 
         <div className="game">
             <button onClick={onBack}> its start of new age</button>
@@ -72,6 +81,7 @@ const GameComponent = ({ onBack }) => {
                 threatenedSq={threatenedSquares}
             />
         </div>
+        </TurnContext.Provider>
     );
 };
 
