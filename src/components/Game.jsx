@@ -11,7 +11,7 @@ const GameComponent = ({ onBack }) => {
     const [selectedSquare, setSelectedSquare] = React.useState(null);
     const [selectedPiece, setSelectedPiece] = React.useState(null);
     const [validMoves, setValidMoves] = React.useState([]);
-    const [treatenedSquares, setThreatenedSquares] = React.useState([]);
+    const [threatenedSquares, setThreatenedSquares] = React.useState([]);
     const [check, setCheck] = React.useState({ w: false, b: false });
 
 
@@ -43,9 +43,9 @@ const GameComponent = ({ onBack }) => {
         if (game.getBoard().getSquare(row, col).isOccupied() && game.getBoard().getSquare(row, col).getPiece().getColor() === game.getCurrentTurn()) {
             const square = game.getBoard().getSquare(row, col);
             const piece = square.getPiece();
-            const leagalMoves = piece.getLegalMoves(row, col, game.getBoard());
+            const legalMoves = piece.getLegalMoves(row, col, game.getBoard());
 
-            if (leagalMoves.length <= 0) {
+            if (legalMoves.length <= 0) {
                 console.error("No valid moves for the selected piece.");
                 return;
             }
@@ -57,7 +57,7 @@ const GameComponent = ({ onBack }) => {
 
     const isCheck = () => {
         const kingPos = game.getKingPosition();
-        return treatenedSquares.some(sq => sq[0] === kingPos.y && sq[1] === kingPos.x);
+        return threatenedSquares.some(sq => sq[0] === kingPos.y && sq[1] === kingPos.x);
     }
 
     return (
@@ -69,7 +69,7 @@ const GameComponent = ({ onBack }) => {
                 handleSquareClick={handleSquareSelection}
                 isSelected={selectedSquare}
                 highlightedSq={validMoves}
-                treatenedSq={treatenedSquares}
+                threatenedSq={threatenedSquares}
             />
         </div>
     );

@@ -1,5 +1,5 @@
-import React from 'react';
-import './SettingsMenu.css';
+import React from "react";
+import "./SettingsMenu.css";
 
 const SettingsMenu = ({ onBack }) => {
   return (
