@@ -32,6 +32,13 @@ export class Game{
     }
 
     checkGameOver() {
+        if (this.isCheckmate()) {
+            this.#gameOver = true;
+            this.#winner = this.#currentTurn === 'w' ? 'b' : 'w';
+        } else if (this.isStalemate()) {
+            this.#gameOver = true;
+            this.#draw = true;
+        }
 
     }
 
@@ -40,11 +47,19 @@ export class Game{
     }
 
     isCheckmate() {
-        // Logic to determine if the current player is in checkmate
+        if (!this.isInCheck()) return false;
+
+        // Get all legal moves for the current player
+        const legalMoves = this.#board.getAllLegalMoves(this.#currentTurn);
+        return legalMoves.length === 0;
     }
 
     isStalemate() {
-        // Logic to determine if the game is in stalemate
+        if (this.isInCheck()) return false;
+
+        // Get all legal moves for the current player
+        const legalMoves = this.#board.getAllLegalMoves(this.#currentTurn);
+        return legalMoves.length === 0;
     }
 
     isInCheck() {
