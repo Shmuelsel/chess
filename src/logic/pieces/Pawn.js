@@ -15,7 +15,7 @@ export class Pawn extends Piece {
         if (row + direction >= 0 && row + direction < 8 && !board.getSquare(row + direction, col).isOccupied()) {
             moves.push([row + direction, col]);
             // If on starting row, can move two squares forward
-            if (row === startRow && row + 2 * direction >= 0 && row + 2 * direction < 8) {
+            if (row === startRow && row + 2 * direction >= 0 && row + 2 * direction < 8 && !board.getSquare(row + 2 * direction, col).isOccupied()) {
                 moves.push([row + 2 * direction, col]);
             }
         }

@@ -14,7 +14,8 @@ export class Board {
     this.#squares = Array.from({ length: 8 }, () => Array(8).fill(null));
     this.initializeBoard();
   }
-
+  //=============================================
+  
   initializeBoard() {
     for (let row = 0; row < 8; row++) {
       for (let col = 0; col < 8; col++) {
@@ -45,14 +46,17 @@ export class Board {
     this.#squares[7][6] = new Square(7, 6, new Knight("w", "n"));
     this.#squares[7][7] = new Square(7, 7, new Rook("w", "r"));
   }
+  //=============================================
 
   getPiece(row, col) {
     return this.#squares[row][col].getPiece();
   }
+  //=============================================
 
   setPiece(row, col, piece) {
     this.#squares[row][col].setPiece(piece);
   }
+  //=============================================
 
   movePiece(fromRow, fromCol, toRow, toCol) {
     const piece = this.getPiece(fromRow, fromCol);
@@ -63,21 +67,22 @@ export class Board {
     this.setPiece(toRow, toCol, piece);
     this.setPiece(fromRow, fromCol, null);
   }
+  //=============================================
 
   getSquares() {
     return this.#squares;
   }
+  //=============================================
 
   getSquare(row, col) {
-    //console.log(`Getting square at Row ${row}, Col ${col}`);
-    //console.log(this.#squares);
-
     return this.#squares[row][col];
   }
+  //=============================================
 
   isOccupied(row, col) {
     return this.#squares[row][col].getPiece();
   }
+  //=============================================
 
   clone() {
     const newBoard = new Board();
@@ -93,16 +98,19 @@ export class Board {
     }
     return newBoard;
   }
+  //=============================================
 
   resetBoard() {
     this.#squares = Array.from({ length: 8 }, () => Array(8).fill(null));
     this.initializeBoard();
   }
+  //=============================================
 
   getPieceKey(piece) {
     if (!piece) return null;
     return piece.getKey();
   }
+  //=============================================
 
   getPieceOfColor(color) {
     const pieces = [];
@@ -116,6 +124,7 @@ export class Board {
     }
     return pieces;
   }
+  //=============================================
 
   getThreatenedSquares(color) {
     const threatenedSquares = [];
@@ -134,31 +143,21 @@ export class Board {
     }
     return threatenedSquares;
   }
-
+  //=============================================
 
   getKingPosition(color) {
-    console.log(`Getting king position for color: ${color}`);
-    
     var kingPos = {};
     for (let row = 0; row < 8; row++) {
       for (let col = 0; col < 8; col++) {
         const piece = this.getPiece(row, col);
-        // if(piece && piece.getType() === PieceType.KING){
-        //   console.log(piece.getColor());
-          
-        //   console.log(piece.getType());
-        //   console.log(piece.getType() === PieceType.KING);
-          
-        // }
-        
         if (piece && piece.getType() === PieceType.KING && piece.getColor() === color) {
-          console.log(`Found king at Row ${row}, Col ${col}`);
           kingPos = { x: col, y: row };
         }
       }
     }
     return kingPos;
   }
+  //=============================================
 
   isInCheck(color) {
     const kingPos = this.getKingPosition(color);

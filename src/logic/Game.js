@@ -17,10 +17,12 @@ export class Game{
         this.#board = new Board();
         this.#kingPos = { w: { x: 4, y: 0 }, b: { x: 4, y: 7 } };
     }
+    //===========================================
 
     run() {
         // Start the game loop or any initial game setup here
     }
+    //===========================================
 
     reset() {
         this.#board.resetBoard();
@@ -30,6 +32,7 @@ export class Game{
         this.#winner = null;
         this.#draw = false;
     }
+    //===========================================
 
     checkGameOver() {
         if (this.isCheckmate()) {
@@ -41,10 +44,12 @@ export class Game{
         }
 
     }
+    //===========================================
 
     getCurrentTurn() {
         return this.#currentTurn;
     }
+    //===========================================
 
     isCheckmate() {
         if (!this.isInCheck()) return false;
@@ -53,6 +58,7 @@ export class Game{
         const legalMoves = this.#board.getAllLegalMoves(this.#currentTurn);
         return legalMoves.length === 0;
     }
+    //===========================================
 
     isStalemate() {
         if (this.isInCheck()) return false;
@@ -61,6 +67,7 @@ export class Game{
         const legalMoves = this.#board.getAllLegalMoves(this.#currentTurn);
         return legalMoves.length === 0;
     }
+    //===========================================
 
     isInCheck() {
         const kingPos = this.#kingPos[this.#currentTurn];
@@ -68,6 +75,7 @@ export class Game{
         
         return this.#board.getThreatenedSquares(this.#currentTurn).some(sq => sq[0] === kingPos.y && sq[1] === kingPos.x);
     }
+    //===========================================
 
     getLegalMoves(row, col) {
         const piece = this.#board.getPiece(row, col);
@@ -76,14 +84,17 @@ export class Game{
         }
         return piece.getLegalMoves(row, col, this.#board);
     }
+    //===========================================
 
     addMoveToHistory(move) {
         this.#moveHistory.push(move);
     }
+    //===========================================
 
     getBoard() {
         return this.#board;
     }
+    //===========================================
 
     movePiece(fromRow, fromCol, toRow, toCol) {
         const piece = this.#board.getPiece(fromRow, fromCol);
@@ -92,26 +103,26 @@ export class Game{
             return;
         }
 
-        // Move the piece
         this.#board.setPiece(toRow, toCol, piece);
         this.#board.setPiece(fromRow, fromCol, null);
         this.addMoveToHistory({ from: { row: fromRow, col: fromCol }, to: { row: toRow, col: toCol } });
-
-        // Switch turns
-        
     }
+    //===========================================
 
     switchTurn() {
         this.#currentTurn = this.#currentTurn === 'w' ? 'b' : 'w';
     }
+    //===========================================
 
     getKingPosition() {
         return this.#kingPos;
     }
+    //===========================================
 
     updateKingPosition(row, col) {
         this.#kingPos[this.#currentTurn] = { x: col, y: row };
     }
+    //===========================================
 
     calcMoves(legalMoves, fromRow, fromCol, piece) {
         const validMoves = [];
@@ -120,18 +131,12 @@ export class Game{
             const tempGame = new Game();
             const tempBoard = this.#board.clone();
             tempBoard.movePiece(fromRow, fromCol, row, col);
-            const kingPos = tempBoard.getKingPosition(this.#currentTurn);            
-            console.log(tempBoard.getThreatenedSquares(this.#currentTurn === 'w' ? 'b' : 'w'));
-            
+            const kingPos = tempBoard.getKingPosition(this.#currentTurn);                        
             const isInCheck = tempBoard.getThreatenedSquares(this.#currentTurn === 'w' ? 'b' : 'w').some(sq => sq[0] === kingPos.y && sq[1] === kingPos.x);
             if (!isInCheck) {
                 validMoves.push(move);
             }
         });
-        return validMoves;
-        console.log(`Valid moves for piece at (${fromRow}, ${fromCol}):`, validMoves);
-        
+        return validMoves;        
     }
-
-
 }
