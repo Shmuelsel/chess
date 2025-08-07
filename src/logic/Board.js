@@ -6,6 +6,7 @@ import { Queen } from "./pieces/Queen";
 import { Rook } from "./pieces/Rook";
 import { Knight } from "./pieces/Knight";
 import { Bishop } from "./pieces/Bishop";
+import { PieceType } from "./pieceConstants";
 
 export class Board {
   #squares = [];
@@ -51,6 +52,16 @@ export class Board {
 
   setPiece(row, col, piece) {
     this.#squares[row][col].setPiece(piece);
+  }
+
+  movePiece(fromRow, fromCol, toRow, toCol) {
+    const piece = this.getPiece(fromRow, fromCol);
+    if (!piece) {
+      console.error("No piece at the source square.");
+      return;
+    }
+    this.setPiece(toRow, toCol, piece);
+    this.setPiece(fromRow, fromCol, null);
   }
 
   getSquares() {
@@ -123,4 +134,38 @@ export class Board {
     }
     return threatenedSquares;
   }
+
+
+  getKingPosition(color) {
+    console.log(`Getting king position for color: ${color}`);
+    
+    var kingPos = {};
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 8; col++) {
+        const piece = this.getPiece(row, col);
+        // if(piece && piece.getType() === PieceType.KING){
+        //   console.log(piece.getColor());
+          
+        //   console.log(piece.getType());
+        //   console.log(piece.getType() === PieceType.KING);
+          
+        // }
+        
+        if (piece && piece.getType() === PieceType.KING && piece.getColor() === color) {
+          console.log(`Found king at Row ${row}, Col ${col}`);
+          kingPos = { x: col, y: row };
+        }
+      }
+    }
+    return kingPos;
+  }
+
+  isInCheck(color) {
+    const kingPos = this.getKingPosition(color);
+    return this.getThreatenedSquares(color).some(sq => sq[0] === kingPos.y && sq[1] === kingPos.x);
+  }
+
+
+
+
 }

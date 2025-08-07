@@ -52,12 +52,13 @@ const GameComponent = ({ onBack }) => {
             const square = game.getBoard().getSquare(row, col);
             const piece = square.getPiece();
             const legalMoves = piece.getLegalMoves(row, col, game.getBoard());
-
-            if (legalMoves.length <= 0) {
+            const validMoves = game.calcMoves(legalMoves, row, col, piece);
+            
+            if (validMoves.length <= 0) {
                 console.error("No valid moves for the selected piece.");
                 return;
             }
-            setValidMoves(piece.getLegalMoves(row, col, game.getBoard()))
+            setValidMoves(validMoves)
             setSelectedSquare({ row, col });
             setSelectedPiece(piece);
         }

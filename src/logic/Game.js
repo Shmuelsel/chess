@@ -113,5 +113,25 @@ export class Game{
         this.#kingPos[this.#currentTurn] = { x: col, y: row };
     }
 
+    calcMoves(legalMoves, fromRow, fromCol, piece) {
+        const validMoves = [];
+        legalMoves.forEach(move => {
+            const [row, col] = move;
+            const tempGame = new Game();
+            const tempBoard = this.#board.clone();
+            tempBoard.movePiece(fromRow, fromCol, row, col);
+            const kingPos = tempBoard.getKingPosition(this.#currentTurn);            
+            console.log(tempBoard.getThreatenedSquares(this.#currentTurn === 'w' ? 'b' : 'w'));
+            
+            const isInCheck = tempBoard.getThreatenedSquares(this.#currentTurn === 'w' ? 'b' : 'w').some(sq => sq[0] === kingPos.y && sq[1] === kingPos.x);
+            if (!isInCheck) {
+                validMoves.push(move);
+            }
+        });
+        return validMoves;
+        console.log(`Valid moves for piece at (${fromRow}, ${fromCol}):`, validMoves);
+        
+    }
+
 
 }

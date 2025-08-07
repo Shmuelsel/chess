@@ -39,6 +39,6 @@ export class King extends Piece {
     }
 
     clone() {
-        return new King(this.color);
+        return new King(this._color);
     }
 } 
