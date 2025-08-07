@@ -5,7 +5,8 @@ export class Pawn extends Piece {
     constructor(color) {
         super(color, PieceType.PAWN);
     }
-
+    //===========================================
+    
     getLegalMoves(row, col, board) {
         const moves = [];
         const direction = this._color === PieceColor.WHITE ? -1 : 1;
@@ -30,9 +31,9 @@ export class Pawn extends Piece {
         }
         return moves;
     }
+    //===========================================
 
     getThreatMoves(row, col, board) {
-        //console.error(row, col);
         var threatMoves = [];
         var direction = this._color === PieceColor.WHITE ? -1 : 1;
         for (var dc = -1; dc <= 1; dc += 2) { // Check left and right captures
@@ -42,14 +43,14 @@ export class Pawn extends Piece {
                 }
             }
         }
-        //console.log(threatMoves);
-        
         return threatMoves;
     }
+    //===========================================
 
     getValue() {
         return 1;
     }
+    //===========================================
 
     clone() {
         return new Pawn(this._color);

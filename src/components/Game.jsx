@@ -38,9 +38,7 @@ const GameComponent = ({ onBack }) => {
                 setThreatenedSquares(game.getBoard().getThreatenedSquares(game.getCurrentTurn()));
                 game.switchTurn();
                 setTurn(game.getCurrentTurn());
-                console.log(`Switched turn to: ${game.getCurrentTurn()}`);
-
-
+                
                 setCheck(prev => ({
                     ...prev,
                     [game.getCurrentTurn()]: game.isInCheck()
@@ -64,11 +62,7 @@ const GameComponent = ({ onBack }) => {
         }
     };
 
-    const isCheck = () => {
-        const kingPos = game.getKingPosition();
-        return threatenedSquares.some(sq => sq[0] === kingPos.y && sq[1] === kingPos.x);
-    }
-
+    
     return (
         <TurnContext.Provider value={{ turn, setTurn }}>
 

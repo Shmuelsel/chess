@@ -70,9 +70,7 @@ export class Game{
     //===========================================
 
     isInCheck() {
-        const kingPos = this.#kingPos[this.#currentTurn];
-        //console.error(kingPos);
-        
+        const kingPos = this.#kingPos[this.#currentTurn];        
         return this.#board.getThreatenedSquares(this.#currentTurn).some(sq => sq[0] === kingPos.y && sq[1] === kingPos.x);
     }
     //===========================================
