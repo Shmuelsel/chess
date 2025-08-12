@@ -1,8 +1,12 @@
 import { Board } from "./Board.js";
 import { Piece } from "./pieces/Piece.js";
+import { Pawn } from "./pieces/Pawn.js";
+import { King } from "./pieces/King.js";
+import { Queen } from "./pieces/Queen.js";
 
 
-export class Game{
+
+export class Game {
     #board;
     #moveHistory = [];
     #currentTurn = 'w';
@@ -55,8 +59,12 @@ export class Game{
         if (!this.isInCheck()) return false;
 
         // Get all legal moves for the current player
-        const legalMoves = this.#board.getAllLegalMoves(this.#currentTurn);
+        const legalMoves = this.getAllLegalMoves(this.#currentTurn);
+        console.log("checkmate legal moves: ", legalMoves);
+        
         return legalMoves.length === 0;
+        
+        
     }
     //===========================================
 
@@ -70,7 +78,7 @@ export class Game{
     //===========================================
 
     isInCheck() {
-        const kingPos = this.#kingPos[this.#currentTurn];        
+        const kingPos = this.#kingPos[this.#currentTurn];
         return this.#board.getThreatenedSquares(this.#currentTurn).some(sq => sq[0] === kingPos.y && sq[1] === kingPos.x);
     }
     //===========================================
@@ -103,6 +111,7 @@ export class Game{
 
         this.#board.setPiece(toRow, toCol, piece);
         this.#board.setPiece(fromRow, fromCol, null);
+        this.promotePawnIfNeeded(toRow, toCol, piece);
         this.addMoveToHistory({ from: { row: fromRow, col: fromCol }, to: { row: toRow, col: toCol } });
     }
     //===========================================
@@ -122,19 +131,58 @@ export class Game{
     }
     //===========================================
 
-    calcMoves(legalMoves, fromRow, fromCol, piece) {
+    calcMoves(fromRow, fromCol, piece) {
         const validMoves = [];
+        const legalMoves = piece.getLegalMoves(fromRow, fromCol, this.#board);
         legalMoves.forEach(move => {
             const [row, col] = move;
-            const tempGame = new Game();
             const tempBoard = this.#board.clone();
             tempBoard.movePiece(fromRow, fromCol, row, col);
-            const kingPos = tempBoard.getKingPosition(this.#currentTurn);                        
+            const kingPos = tempBoard.getKingPosition(this.#currentTurn);
             const isInCheck = tempBoard.getThreatenedSquares(this.#currentTurn === 'w' ? 'b' : 'w').some(sq => sq[0] === kingPos.y && sq[1] === kingPos.x);
             if (!isInCheck) {
                 validMoves.push(move);
             }
         });
-        return validMoves;        
+        return validMoves;
+    }
+    //===========================================
+
+    promotePawnIfNeeded(row, col, piece) {
+        if (piece instanceof Pawn) {
+            if ((piece.getColor() === 'w' && row === 0) || (piece.getColor() === 'b' && row === 7)) {
+                const promotedPiece = new Queen(piece.getColor(), 'q'); // Default to Queen promotion
+                this.#board.setPiece(row, col, promotedPiece);
+            }
+        }
+    }
+    //===========================================
+
+    getAllLegalMoves(color) {
+        const legalMoves = [];
+        this.#board.getSquares().forEach((row, rowIndex) => {
+            row.forEach((square, colIndex) => {
+                const piece = square.getPiece();
+                if (piece && piece.getColor() === color) {
+                    const moves = this.calcMoves(rowIndex, colIndex, piece);
+                    moves.forEach(move => {
+                        legalMoves.push({ from: { row: rowIndex, col: colIndex }, to: { row: move[0], col: move[1] } });
+                    });
+                }
+            });
+        });
+        return legalMoves;
+    }
+    //===========================================
+
+    checkGameOver() {
+        this.#treatMoves = this.#board.getThreatenedSquares(this.#currentTurn === 'w' ? 'b' : 'w');
+        if (this.isCheckmate()) {
+            this.#gameOver = true;
+            this.#winner = this.#currentTurn === 'w' ? 'w' : 'b';
+        } else if (this.isStalemate()) {
+            this.#gameOver = true;
+            this.#draw = true;
+        }
     }
 }

@@ -66,6 +66,8 @@ export class Board {
     }
     this.setPiece(toRow, toCol, piece);
     this.setPiece(fromRow, fromCol, null);
+    console.log(piece.getType());
+    
   }
   //=============================================
 
@@ -163,6 +165,24 @@ export class Board {
     const kingPos = this.getKingPosition(color);
     return this.getThreatenedSquares(color).some(sq => sq[0] === kingPos.y && sq[1] === kingPos.x);
   }
+  //=============================================
+  
+  getAllLegalMoves(color) {
+    const legalMoves = [];
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 8; col++) {
+        const piece = this.getPiece(row, col);
+        if (piece && piece.getColor() === color) {
+          const moves = piece.getLegalMoves(row, col, this);
+          for (const move of moves) {
+            legalMoves.push({ from: { row, col }, to: move });
+          }
+        }
+      }
+    }
+    return legalMoves;
+  }
+  
 
 
 

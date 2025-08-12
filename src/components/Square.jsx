@@ -12,7 +12,7 @@ const Square = ({ isSelected, onClick, square, row, col, isHighlighted, isThreat
   const {turn} = useTurn();
   const squareClass = `square ${piece && piece.getColor() === turn ? 'occupied' : ''}
                               ${(row + col) % 2 === 0 ? 'white' : 'black'} 
-                              ${isSelected ? 'selected' : ''}
+                              ${isSelected ? 'selected' : 'notSelected'}
                               ${isHighlighted ? 'highlighted' : ''}
                               ${isHighlighted && square.getPiece() ? 'eatable' : ''}
                               ${isThreatened ? 'threatened' : ''}

@@ -19,6 +19,7 @@ const GameComponent = ({ onBack }) => {
     const [threatenedSquares, setThreatenedSquares] = React.useState([]);
     const [check, setCheck] = React.useState({ w: false, b: false });
     const [turn, setTurn] = React.useState(game.getCurrentTurn());
+    const [checkmate, setCheckmate] = React.useState(false);
 
     
 
@@ -42,15 +43,16 @@ const GameComponent = ({ onBack }) => {
                 setCheck(prev => ({
                     ...prev,
                     [game.getCurrentTurn()]: game.isInCheck()
-                }));                
+                }));   
             }
         }
 
         if (game.getBoard().getSquare(row, col).isOccupied() && game.getBoard().getSquare(row, col).getPiece().getColor() === game.getCurrentTurn()) {
             const square = game.getBoard().getSquare(row, col);
             const piece = square.getPiece();
-            const legalMoves = piece.getLegalMoves(row, col, game.getBoard());
-            const validMoves = game.calcMoves(legalMoves, row, col, piece);
+            const validMoves = game.calcMoves(row, col, piece);
+
+            game.checkGameOver();
             
             if (validMoves.length <= 0) {
                 console.error("No valid moves for the selected piece.");

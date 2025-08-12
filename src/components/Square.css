@@ -16,7 +16,7 @@
   background-color: #6e3707;
 }
 
-.square.occupied:hover {
+.square.occupied.notSelected:hover {
   background-color: rgba(255, 0, 0, 0.3);
 }
 
