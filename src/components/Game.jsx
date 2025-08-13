@@ -36,14 +36,18 @@ const GameComponent = ({ onBack }) => {
                 setSelectedPiece(null);
                 setSelectedSquare(null);
                 setValidMoves([]);
-                setThreatenedSquares(game.getBoard().getThreatenedSquares(game.getCurrentTurn()));
+                setThreatenedSquares(game.getBoard().getThreatenedSquares(game.getCurrentTurn() === 'w' ? 'b' : 'w'));
+                console.log(game.isInCheck(game.getCurrentTurn() === 'w' ? 'b' : 'w'));
+
+                // setCheck(prev => ({
+                //     ...prev,
+                //     [game.getCurrentTurn()]: game.isInCheck()
+                // }));
+
                 game.switchTurn();
                 setTurn(game.getCurrentTurn());
                 
-                setCheck(prev => ({
-                    ...prev,
-                    [game.getCurrentTurn()]: game.isInCheck()
-                }));   
+                 
             }
         }
 
@@ -52,7 +56,6 @@ const GameComponent = ({ onBack }) => {
             const piece = square.getPiece();
             const validMoves = game.calcMoves(row, col, piece);
 
-            game.checkGameOver();
             
             if (validMoves.length <= 0) {
                 console.error("No valid moves for the selected piece.");

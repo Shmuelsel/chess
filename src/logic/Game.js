@@ -13,13 +13,13 @@ export class Game {
     #gameOver = false;
     #winner = null;
     #draw = false;
-    #kingPos = { w: { x: 4, y: 0 }, b: { x: 4, y: 7 } };
+    #kingPos;
     #treatMoves = [];
 
 
     constructor() {
         this.#board = new Board();
-        this.#kingPos = { w: { x: 4, y: 0 }, b: { x: 4, y: 7 } };
+        this.#kingPos = { b: { x: 4, y: 0 }, w: { x: 4, y: 7 } };
     }
     //===========================================
 
@@ -77,9 +77,10 @@ export class Game {
     }
     //===========================================
 
-    isInCheck() {
-        const kingPos = this.#kingPos[this.#currentTurn];
-        return this.#board.getThreatenedSquares(this.#currentTurn).some(sq => sq[0] === kingPos.y && sq[1] === kingPos.x);
+    isInCheck(color) {
+        const kingPos = this.#kingPos[color];
+        console.log(kingPos);
+        return this.#board.getThreatenedSquares(color).some(sq => sq[0] === kingPos.y && sq[1] === kingPos.x);
     }
     //===========================================
 

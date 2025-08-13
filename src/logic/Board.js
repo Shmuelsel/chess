@@ -133,7 +133,7 @@ export class Board {
     for (let row = 0; row < 8; row++) {
       for (let col = 0; col < 8; col++) {
         const piece = this.getPiece(row, col);
-        if (piece && piece.getColor() === color) {
+        if (piece && piece.getColor() !== color) {          
           const threatMoves = piece.getThreatMoves(row, col, this);
           if (threatMoves.length !== 0) {
             for (const [r, c] of threatMoves) {
