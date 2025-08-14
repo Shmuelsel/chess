@@ -10,11 +10,13 @@ export class Game {
     #board;
     #moveHistory = [];
     #currentTurn = 'w';
+    #enemyColor = this.#currentTurn === 'w' ? 'b' : 'w';
     #gameOver = false;
     #winner = null;
     #draw = false;
     #kingPos;
     #treatMoves = [];
+    #check = { w: false, b: false };
 
 
     constructor() {
@@ -40,13 +42,17 @@ export class Game {
 
     checkGameOver() {
         if (this.isCheckmate()) {
+            console.error("Checkmate! The game is over.");
             this.#gameOver = true;
             this.#winner = this.#currentTurn === 'w' ? 'b' : 'w';
+            return true;
+
         } else if (this.isStalemate()) {
+            console.error("Stalemate! The game is a draw.");
             this.#gameOver = true;
             this.#draw = true;
+            return true;
         }
-
     }
     //===========================================
 
@@ -56,22 +62,18 @@ export class Game {
     //===========================================
 
     isCheckmate() {
-        if (!this.isInCheck()) return false;
+        if (!this.isInCheck(this.#currentTurn)) return false;
 
         // Get all legal moves for the current player
         const legalMoves = this.getAllLegalMoves(this.#currentTurn);
         console.log("checkmate legal moves: ", legalMoves);
-        
+        console.log(legalMoves.length === 0);
         return legalMoves.length === 0;
-        
-        
     }
     //===========================================
 
     isStalemate() {
-        if (this.isInCheck()) return false;
-
-        // Get all legal moves for the current player
+        if (this.isInCheck(this.#currentTurn)) return false;
         const legalMoves = this.#board.getAllLegalMoves(this.#currentTurn);
         return legalMoves.length === 0;
     }
@@ -79,8 +81,9 @@ export class Game {
 
     isInCheck(color) {
         const kingPos = this.#kingPos[color];
-        console.log(kingPos);
-        return this.#board.getThreatenedSquares(color).some(sq => sq[0] === kingPos.y && sq[1] === kingPos.x);
+        const check = this.#board.getThreatenedSquares(color).some(sq => sq[0] === kingPos.y && sq[1] === kingPos.x);
+        this.#check[color] = check;
+        return check;
     }
     //===========================================
 
@@ -131,6 +134,8 @@ export class Game {
         this.#kingPos[this.#currentTurn] = { x: col, y: row };
     }
     //===========================================
+    // takes all the moves of a piece and checks if they are legal
+    // by checking if the move does not put the king in check
 
     calcMoves(fromRow, fromCol, piece) {
         const validMoves = [];
@@ -140,7 +145,8 @@ export class Game {
             const tempBoard = this.#board.clone();
             tempBoard.movePiece(fromRow, fromCol, row, col);
             const kingPos = tempBoard.getKingPosition(this.#currentTurn);
-            const isInCheck = tempBoard.getThreatenedSquares(this.#currentTurn === 'w' ? 'b' : 'w').some(sq => sq[0] === kingPos.y && sq[1] === kingPos.x);
+
+            const isInCheck = tempBoard.getThreatenedSquares(this.#currentTurn).some(sq => sq[0] === kingPos.y && sq[1] === kingPos.x);
             if (!isInCheck) {
                 validMoves.push(move);
             }
@@ -176,14 +182,7 @@ export class Game {
     }
     //===========================================
 
-    checkGameOver() {
-        this.#treatMoves = this.#board.getThreatenedSquares(this.#currentTurn === 'w' ? 'b' : 'w');
-        if (this.isCheckmate()) {
-            this.#gameOver = true;
-            this.#winner = this.#currentTurn === 'w' ? 'w' : 'b';
-        } else if (this.isStalemate()) {
-            this.#gameOver = true;
-            this.#draw = true;
-        }
+    getCheckStatus() {
+        return this.#check;
     }
 }

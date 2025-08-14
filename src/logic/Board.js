@@ -65,9 +65,7 @@ export class Board {
       return;
     }
     this.setPiece(toRow, toCol, piece);
-    this.setPiece(fromRow, fromCol, null);
-    console.log(piece.getType());
-    
+    this.setPiece(fromRow, fromCol, null);    
   }
   //=============================================
 

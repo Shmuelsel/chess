@@ -3,7 +3,7 @@ import { Game } from "../logic/Game";
 import Square from "./Square";
 import "./Board.css"
 
-const Board = ({ board, handleSquareClick, isSelected, highlightedSq, threatenedSq }) => {
+const Board = ({ board, handleSquareClick, isSelected, highlightedSq, threatenedSq, lastMove }) => {
 
   return (
     <div className="board">
@@ -23,6 +23,8 @@ const Board = ({ board, handleSquareClick, isSelected, highlightedSq, threatened
                       onClick={() => handleSquareClick(rowIndex, colIndex)}
                       row={rowIndex}
                       col={colIndex}
+                      isLastMoveFrom={lastMove && lastMove.from.col === colIndex && lastMove.from.row === rowIndex}
+                      isLastMoveTo={lastMove && lastMove.to.col === colIndex && lastMove.to.row === rowIndex}
                   />
               </div>
             );
