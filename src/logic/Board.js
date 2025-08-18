@@ -24,18 +24,18 @@ export class Board {
     }
 
     for (let col = 0; col < 8; col++) {
-      this.#squares[1][col] = new Square(1, col, new Pawn("b", "p")); // Black pawns
+      //this.#squares[1][col] = new Square(1, col, new Pawn("b", "p")); // Black pawns
       this.#squares[6][col] = new Square(6, col, new Pawn("w", "p")); // White pawns
     }
     // Initialize black pieces
-    this.#squares[0][0] = new Square(0, 0, new Rook("b", "r"));
-    this.#squares[0][1] = new Square(0, 1, new Knight("b", "n"));
-    this.#squares[0][2] = new Square(0, 2, new Bishop("b", "b"));
-    this.#squares[0][3] = new Square(0, 3, new Queen("b", "q"));
+    // this.#squares[0][0] = new Square(0, 0, new Rook("b", "r"));
+    // this.#squares[0][1] = new Square(0, 1, new Knight("b", "n"));
+    // this.#squares[0][2] = new Square(0, 2, new Bishop("b", "b"));
+    // this.#squares[0][3] = new Square(0, 3, new Queen("b", "q"));
     this.#squares[0][4] = new Square(0, 4, new King("b", "k"));
-    this.#squares[0][5] = new Square(0, 5, new Bishop("b", "b"));
-    this.#squares[0][6] = new Square(0, 6, new Knight("b", "n"));
-    this.#squares[0][7] = new Square(0, 7, new Rook("b", "r"));
+    // this.#squares[0][5] = new Square(0, 5, new Bishop("b", "b"));
+    // this.#squares[0][6] = new Square(0, 6, new Knight("b", "n"));
+    // this.#squares[0][7] = new Square(0, 7, new Rook("b", "r"));
     // Initialize white pieces
     this.#squares[7][0] = new Square(7, 0, new Rook("w", "r"));
     this.#squares[7][1] = new Square(7, 1, new Knight("w", "n"));
@@ -165,21 +165,7 @@ export class Board {
   }
   //=============================================
   
-  getAllLegalMoves(color) {
-    const legalMoves = [];
-    for (let row = 0; row < 8; row++) {
-      for (let col = 0; col < 8; col++) {
-        const piece = this.getPiece(row, col);
-        if (piece && piece.getColor() === color) {
-          const moves = piece.getLegalMoves(row, col, this);
-          for (const move of moves) {
-            legalMoves.push({ from: { row, col }, to: move });
-          }
-        }
-      }
-    }
-    return legalMoves;
-  }
+  
   
 
 

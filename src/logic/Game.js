@@ -17,11 +17,13 @@ export class Game {
     #kingPos;
     #treatMoves = [];
     #check = { w: false, b: false };
+    #lastMove = null;
 
 
     constructor() {
         this.#board = new Board();
         this.#kingPos = { b: { x: 4, y: 0 }, w: { x: 4, y: 7 } };
+        this.#moveHistory = [];
     }
     //===========================================
 
@@ -63,24 +65,32 @@ export class Game {
 
     isCheckmate() {
         if (!this.isInCheck(this.#currentTurn)) return false;
-
+        console.log(this.#kingPos);
         // Get all legal moves for the current player
         const legalMoves = this.getAllLegalMoves(this.#currentTurn);
-        console.log("checkmate legal moves: ", legalMoves);
-        console.log(legalMoves.length === 0);
+        if (legalMoves.length <= 0) {
+            console.log("checkmate legal moves: ", legalMoves);
+            console.log(legalMoves.length === 0);
+        }
         return legalMoves.length === 0;
     }
     //===========================================
 
     isStalemate() {
         if (this.isInCheck(this.#currentTurn)) return false;
-        const legalMoves = this.#board.getAllLegalMoves(this.#currentTurn);
+        const legalMoves = this.getAllLegalMoves(this.#currentTurn);
+        if (legalMoves.length <= 0) {
+            console.log("stalemate legal moves: ", legalMoves);
+            console.log(legalMoves.length === 0);
+        }
+
         return legalMoves.length === 0;
     }
     //===========================================
 
     isInCheck(color) {
-        const kingPos = this.#kingPos[color];
+        //const kingPos = this.#kingPos[color];
+        const kingPos = this.#board.getKingPosition(color);
         const check = this.#board.getThreatenedSquares(color).some(sq => sq[0] === kingPos.y && sq[1] === kingPos.x);
         this.#check[color] = check;
         return check;
@@ -115,8 +125,17 @@ export class Game {
 
         this.#board.setPiece(toRow, toCol, piece);
         this.#board.setPiece(fromRow, fromCol, null);
+
+        if (piece instanceof King) {
+            this.updateKingPosition(toRow, toCol);
+        }
+
         this.promotePawnIfNeeded(toRow, toCol, piece);
-        this.addMoveToHistory({ from: { row: fromRow, col: fromCol }, to: { row: toRow, col: toCol } });
+        this.#lastMove = { piece: piece.getPieceKey(), from: { row: fromRow, col: fromCol }, to: { row: toRow, col: toCol } };
+        this.addMoveToHistory(this.#lastMove);
+
+        console.log(this.#moveHistory);
+        
     }
     //===========================================
 
@@ -184,5 +203,47 @@ export class Game {
 
     getCheckStatus() {
         return this.#check;
+    }
+    //===========================================
+
+    unduMove() {
+        if (this.#moveHistory.length === 0) {
+            console.error("No moves to undo.");
+            return;
+        }
+        const lastMove = this.#moveHistory.pop();
+        const from = lastMove.from;
+        const to = lastMove.to;
+        const piece = this.#board.getPiece(to.row, to.col);
+        if (!piece) {
+            console.error("Invalid undo: No piece at the destination square.");
+            return;
+        }        
+        this.#board.setPiece(from.row, from.col, piece);
+        this.#board.setPiece(to.row, to.col, null);        
+        this.#lastMove = this.#moveHistory.length > 0 ? this.#moveHistory[this.#moveHistory.length - 1] : null;        
+        this.switchTurn();
+    }
+    //===========================================
+
+    clone() {
+        const newGame = new Game();
+        newGame.#board = this.#board.clone();
+        newGame.#moveHistory = [...this.#moveHistory];
+        newGame.#currentTurn = this.#currentTurn;
+        newGame.#enemyColor = this.#enemyColor;
+        newGame.#gameOver = this.#gameOver;
+        newGame.#winner = this.#winner;
+        newGame.#draw = this.#draw;
+        newGame.#kingPos = { ...this.#kingPos };
+        newGame.#treatMoves = [...this.#treatMoves];
+        newGame.#check = { ...this.#check };
+        newGame.#lastMove = this.#lastMove ? { from: { ...this.#lastMove.from }, to: { ...this.#lastMove.to } } : null;
+        return newGame;
+    }
+    //===========================================
+
+    getLastMove() {
+        return this.#lastMove;
     }
 }

@@ -18,7 +18,6 @@ const GameComponent = ({ onBack }) => {
     // const [checkmate, setCheckmate] = React.useState(false);
     // const [check, setCheck] = React.useState({ w: false, b: false });
     // const [kingPosition, setKingPosition] = React.useState(game.getKingPosition());
-
     const [game, setGame] = React.useState(new Game());
     const [selectedSquare, setSelectedSquare] = React.useState(null);
     const [selectedPiece, setSelectedPiece] = React.useState(null);
@@ -26,7 +25,7 @@ const GameComponent = ({ onBack }) => {
     const [threatenedSquares, setThreatenedSquares] = React.useState([]);
     const [turn, setTurn] = React.useState(game.getCurrentTurn());
     const [lastMove, setLastMove] = React.useState(null);
-
+    
 
 
     const handleSquareSelection = (row, col) => {
@@ -74,7 +73,20 @@ const GameComponent = ({ onBack }) => {
             setValidMoves(validMoves)
             setSelectedSquare({ row, col });
             setSelectedPiece(piece);
+            
         }
+    };
+
+    const unduMove = () => {
+        game.unduMove();
+        //const game = game.clone();
+        setGame(game);
+        setSelectedPiece(null);
+        setSelectedSquare(null);
+        setValidMoves([]);
+        setThreatenedSquares(game.getBoard().getThreatenedSquares(game.getCurrentTurn() === 'w' ? 'b' : 'w'));
+        setTurn(game.getCurrentTurn());
+        setLastMove(game.getLastMove());
     };
 
 
@@ -82,7 +94,8 @@ const GameComponent = ({ onBack }) => {
         <TurnContext.Provider value={{ turn, setTurn, lastMove }}>
 
             <div className="game">
-                <button onClick={onBack}> its start of new age</button>
+                <button onClick={onBack}> back</button>
+                <button onClick={unduMove}>Undu Move</button>
                 <Board
                     board={game.getBoard()}
                     handleSquareClick={handleSquareSelection}
