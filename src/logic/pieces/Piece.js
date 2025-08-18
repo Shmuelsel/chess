@@ -23,10 +23,6 @@ export class Piece {
         return this._type + this._color;
     }
 
-    getPiece() {
-        return this;
-    }
-
     getType(){
         return this._type;
     }

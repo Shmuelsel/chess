@@ -24,7 +24,7 @@ export class Board {
     }
 
     for (let col = 0; col < 8; col++) {
-      //this.#squares[1][col] = new Square(1, col, new Pawn("b", "p")); // Black pawns
+      this.#squares[1][col] = new Square(1, col, new Pawn("b", "p")); // Black pawns
       this.#squares[6][col] = new Square(6, col, new Pawn("w", "p")); // White pawns
     }
     // Initialize black pieces
@@ -165,7 +165,11 @@ export class Board {
   }
   //=============================================
   
-  
+  getEnPassantSquare() {
+    // This method should return the square that is eligible for en passant capture
+    // For simplicity, we assume it returns null if no en passant is available
+    return null; // Implement logic to return the en passant square if available
+  }
   
 
 

@@ -131,7 +131,7 @@ export class Game {
         }
 
         this.promotePawnIfNeeded(toRow, toCol, piece);
-        this.#lastMove = { piece: piece.getPieceKey(), from: { row: fromRow, col: fromCol }, to: { row: toRow, col: toCol } };
+        this.#lastMove = { piece: piece, from: { row: fromRow, col: fromCol }, to: { row: toRow, col: toCol } };
         this.addMoveToHistory(this.#lastMove);
 
         console.log(this.#moveHistory);
@@ -170,6 +170,16 @@ export class Game {
                 validMoves.push(move);
             }
         });
+
+        //add an passant for the pawn
+        if (piece instanceof Pawn) {
+            if (this.#lastMove && this.#lastMove.piece instanceof Pawn && this.#lastMove.piece.getColor() !== piece.getColor()) {
+                const [row, col] = this.#lastMove.to;
+                if (row === fromRow + (piece.getColor() === 'w' ? -1 : 1) && (col === fromCol - 1 || col === fromCol + 1)) {
+                    validMoves.push([row, col]);
+                }
+            }
+        }
         return validMoves;
     }
     //===========================================
@@ -214,7 +224,7 @@ export class Game {
         const lastMove = this.#moveHistory.pop();
         const from = lastMove.from;
         const to = lastMove.to;
-        const piece = this.#board.getPiece(to.row, to.col);
+        const piece = lastMove.piece;
         if (!piece) {
             console.error("Invalid undo: No piece at the destination square.");
             return;

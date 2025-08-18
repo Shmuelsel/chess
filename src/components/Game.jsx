@@ -50,22 +50,13 @@ const GameComponent = ({ onBack }) => {
                     console.log("Game Over");
                     onBack();
                 }
-                // setCheck(prev => ({
-                //     ...prev,
-                //     [game.getCurrentTurn()]: game.isInCheck()
-                // }));
-
-
             }
         }
 
         if (game.getBoard().getSquare(row, col).isOccupied() && game.getBoard().getSquare(row, col).getPiece().getColor() === game.getCurrentTurn()) {
-
             const square = game.getBoard().getSquare(row, col);
             const piece = square.getPiece();
             const validMoves = game.calcMoves(row, col, piece);
-
-
             if (validMoves.length <= 0) {
                 console.error("No valid moves for the selected piece.");
                 return;
@@ -79,7 +70,6 @@ const GameComponent = ({ onBack }) => {
 
     const unduMove = () => {
         game.unduMove();
-        //const game = game.clone();
         setGame(game);
         setSelectedPiece(null);
         setSelectedSquare(null);

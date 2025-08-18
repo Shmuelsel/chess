@@ -29,6 +29,7 @@ export class Pawn extends Piece {
         if (col < 7 && row + direction >= 0 && row + direction < 8 && board.getSquare(row + direction, col + 1).isOccupied()) {
             moves.push([row + direction, col + 1]);
         }
+
         return moves;
     }
     //===========================================
