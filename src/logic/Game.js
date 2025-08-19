@@ -4,6 +4,7 @@ import { Pawn } from "./pieces/Pawn.js";
 import { King } from "./pieces/King.js";
 import { Queen } from "./pieces/Queen.js";
 import { Rook } from "./pieces/Rook.js";
+import { type } from "@testing-library/user-event/dist/type/index.js";
 
 
 
@@ -125,6 +126,7 @@ export class Game {
             console.error("Invalid move: No piece at the source square or not your turn.");
             return;
         }
+        var capturePiece = this.#board.getPiece(toRow, toCol) ? this.#board.getPiece(toRow, toCol) : null;
 
         this.#board.setPiece(toRow, toCol, piece);
         this.#board.setPiece(fromRow, fromCol, null);
@@ -132,6 +134,7 @@ export class Game {
         if (piece instanceof Pawn) {
             this.promotePawnIfNeeded(toRow, toCol, piece);
             if (this.#enPassant && this.#enPassant.row === fromRow && this.#enPassant.col === fromCol && this.#enPassant.col !== toCol) {
+                capturePiece = this.#board.getPiece(this.#enPassant.row, toCol);
                 this.#board.setPiece(this.#enPassant.row, toCol, null);
                 console.log("En passant captured:", this.#enPassant);
             }
@@ -158,7 +161,16 @@ export class Game {
 
         piece._hasMoved = true;
 
-        this.#lastMove = { piece: piece, from: { row: fromRow, col: fromCol }, to: { row: toRow, col: toCol } };
+        var moveType = "normal";
+        // if(castling){
+        //     moveType = "castling";
+        // }else if (this.#enPassant) {
+        //     moveType = "en passant";
+        // }
+
+        //this.#lastMove = { piece: piece, from: { row: fromRow, col: fromCol }, to: { row: toRow, col: toCol } };
+        // last move for castle or an passant and capture eg move capture type
+        this.#lastMove = { piece: piece, move: { from: { row: fromRow, col: fromCol }, to: { row: toRow, col: toCol } }, capture: capturePiece, special: null };
         this.addMoveToHistory(this.#lastMove);
 
         //console.log(this.#moveHistory);
@@ -186,7 +198,7 @@ export class Game {
     calcMoves(fromRow, fromCol, piece) {
         const validMoves = [];
         const legalMoves = piece.getLegalMoves(fromRow, fromCol, this.#board);
-        //console.log(legalMoves);
+        console.log(legalMoves);
 
         legalMoves.forEach(move => {
             const [row, col] = move;
@@ -203,9 +215,9 @@ export class Game {
         //add an passant for the pawn
         if (piece instanceof Pawn) {
             if (this.#lastMove && this.#lastMove.piece instanceof Pawn && this.#lastMove.piece.getColor() !== piece.getColor()) {
-                var row = this.#lastMove.to.row;
-                var col = this.#lastMove.to.col;
-                if (this.#lastMove && Math.abs(this.#lastMove.from.row - this.#lastMove.to.row) === 2 && row === fromRow && Math.abs(col - fromCol) === 1 && piece.getColor() === this.#currentTurn) {
+                var row = this.#lastMove.move.to.row;
+                var col = this.#lastMove.move.to.col;
+                if (this.#lastMove && Math.abs(this.#lastMove.move.from.row - this.#lastMove.move.to.row) === 2 && row === fromRow && Math.abs(col - fromCol) === 1 && piece.getColor() === this.#currentTurn) {
                     if (piece.getColor() === 'w') {
                         validMoves.push([fromRow - 1, col]);
                     } else {
@@ -226,9 +238,7 @@ export class Game {
                 }
             }
             if(!piece._hasMoved && !this.#board.getSquare(row, 1).isOccupied() && !this.#board.getSquare(row, 2).isOccupied() && !this.#board.getSquare(row, 3).isOccupied()) {
-                if(this.#board.getSquare(row, 0).isOccupied() && this.#board.getSquare(row, 0).getPiece() instanceof Rook && !this.#board.getSquare(row, 0).getPiece()._hasMoved) {
-                    console.log(!this.#board.getSquare(row, 0).getPiece()._hasMoved);
-                    
+                if(this.#board.getSquare(row, 0).isOccupied() && this.#board.getSquare(row, 0).getPiece() instanceof Rook && !this.#board.getSquare(row, 0).getPiece()._hasMoved) {                    
                     this.#castling[this.#currentTurn].queenside = true;
                     validMoves.push([row, 2]); // Queenside castling
                 }
@@ -275,15 +285,15 @@ export class Game {
             return;
         }
         const lastMove = this.#moveHistory.pop();
-        const from = lastMove.from;
-        const to = lastMove.to;
+        const from = lastMove.move.from;
+        const to = lastMove.move.to;
         const piece = lastMove.piece;
-        if (!piece) {
-            console.error("Invalid undo: No piece at the destination square.");
-            return;
-        }
         this.#board.setPiece(from.row, from.col, piece);
-        this.#board.setPiece(to.row, to.col, null);
+        if(lastMove.capture) {
+            this.#board.setPiece(to.row, to.col, lastMove.capture);
+        }else{
+            this.#board.setPiece(to.row, to.col, null);
+        }
         this.#lastMove = this.#moveHistory.length > 0 ? this.#moveHistory[this.#moveHistory.length - 1] : null;
         this.switchTurn();
     }
@@ -301,7 +311,7 @@ export class Game {
         newGame.#kingPos = { ...this.#kingPos };
         newGame.#treatMoves = [...this.#treatMoves];
         newGame.#check = { ...this.#check };
-        newGame.#lastMove = this.#lastMove ? { from: { ...this.#lastMove.from }, to: { ...this.#lastMove.to } } : null;
+        newGame.#lastMove = this.#lastMove ? { from: { ...this.#lastMove.move.from }, to: { ...this.#lastMove.move.to } } : null;
         return newGame;
     }
     //===========================================

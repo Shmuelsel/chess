@@ -40,7 +40,7 @@ const GameComponent = ({ onBack }) => {
                 game.movePiece(selectedSquare.row, selectedSquare.col, row, col);
                 setSelectedPiece(null);
                 setSelectedSquare(null);
-                setLastMove({ from: selectedSquare, to: { row, col } });
+                setLastMove(game.getLastMove());
                 setValidMoves([]);
                 var enemyColor = game.getCurrentTurn() === 'w' ? 'b' : 'w';
                 setThreatenedSquares(game.getBoard().getThreatenedSquares(enemyColor));

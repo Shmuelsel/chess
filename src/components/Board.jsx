@@ -23,8 +23,8 @@ const Board = ({ board, handleSquareClick, isSelected, highlightedSq, threatened
                       onClick={() => handleSquareClick(rowIndex, colIndex)}
                       row={rowIndex}
                       col={colIndex}
-                      isLastMoveFrom={lastMove && lastMove.from.col === colIndex && lastMove.from.row === rowIndex}
-                      isLastMoveTo={lastMove && lastMove.to.col === colIndex && lastMove.to.row === rowIndex}
+                      isLastMoveFrom={lastMove && lastMove.move.from.col === colIndex && lastMove.move.from.row === rowIndex}
+                      isLastMoveTo={lastMove && lastMove.move.to.col === colIndex && lastMove.move.to.row === rowIndex}
                   />
               </div>
             );
