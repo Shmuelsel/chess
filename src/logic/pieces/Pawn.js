@@ -26,7 +26,8 @@ export class Pawn extends Piece {
             board.getSquare(row + direction, col - 1).getPiece().getColor() !== this._color) {
             moves.push([row + direction, col - 1]);
         }
-        if (col < 7 && row + direction >= 0 && row + direction < 8 && board.getSquare(row + direction, col + 1).isOccupied()) {
+        if (col < 7 && row + direction >= 0 && row + direction < 8 && board.getSquare(row + direction, col + 1).isOccupied() &&
+            board.getSquare(row + direction, col + 1).getPiece().getColor() !== this._color) {
             moves.push([row + direction, col + 1]);
         }
 

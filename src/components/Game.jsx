@@ -85,7 +85,7 @@ const GameComponent = ({ onBack }) => {
 
             <div className="game">
                 <button onClick={onBack}> back</button>
-                <button onClick={unduMove}>Undu Move</button>
+                {game.getLastMove() && <button onClick={unduMove}>Undu Move</button>}
                 <Board
                     board={game.getBoard()}
                     handleSquareClick={handleSquareSelection}

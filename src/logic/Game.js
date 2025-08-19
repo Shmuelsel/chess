@@ -18,6 +18,7 @@ export class Game {
     #treatMoves = [];
     #check = { w: false, b: false };
     #lastMove = null;
+    #enPassant = null;
 
 
     constructor() {
@@ -126,16 +127,24 @@ export class Game {
         this.#board.setPiece(toRow, toCol, piece);
         this.#board.setPiece(fromRow, fromCol, null);
 
+        if (piece instanceof Pawn) {
+            this.promotePawnIfNeeded(toRow, toCol, piece);
+            if (this.#enPassant && this.#enPassant.row === fromRow && this.#enPassant.col === fromCol && this.#enPassant.col !== toCol) {
+                this.#board.setPiece(this.#enPassant.row, toCol, null);
+                console.log("En passant captured:", this.#enPassant);
+            }
+        }
+
         if (piece instanceof King) {
             this.updateKingPosition(toRow, toCol);
         }
 
-        this.promotePawnIfNeeded(toRow, toCol, piece);
+
         this.#lastMove = { piece: piece, from: { row: fromRow, col: fromCol }, to: { row: toRow, col: toCol } };
         this.addMoveToHistory(this.#lastMove);
 
-        console.log(this.#moveHistory);
-        
+        //console.log(this.#moveHistory);
+
     }
     //===========================================
 
@@ -174,11 +183,15 @@ export class Game {
         //add an passant for the pawn
         if (piece instanceof Pawn) {
             if (this.#lastMove && this.#lastMove.piece instanceof Pawn && this.#lastMove.piece.getColor() !== piece.getColor()) {
-                //const anpassant = [row, col];
                 var row = this.#lastMove.to.row;
                 var col = this.#lastMove.to.col;
-                if (fromRow === row && (row - this.#lastMove.from.y !== 1 || row - this.#lastMove.from.y !== -1) && col === fromCol + 1 || col === fromCol - 1) {
-                    validMoves.push([row, col]);
+                if (this.#lastMove && Math.abs(this.#lastMove.from.row - this.#lastMove.to.row) === 2 && row === fromRow && Math.abs(col - fromCol) === 1 && piece.getColor() === this.#currentTurn) {
+                    if (piece.getColor() === 'w') {
+                        validMoves.push([fromRow - 1, col]);
+                    } else {
+                        validMoves.push([fromRow + 1, col]);
+                    }
+                    this.#enPassant = { row: fromRow, col: fromCol };
                 }
             }
         }
@@ -187,11 +200,9 @@ export class Game {
     //===========================================
 
     promotePawnIfNeeded(row, col, piece) {
-        if (piece instanceof Pawn) {
-            if ((piece.getColor() === 'w' && row === 0) || (piece.getColor() === 'b' && row === 7)) {
-                const promotedPiece = new Queen(piece.getColor(), 'q'); // Default to Queen promotion
-                this.#board.setPiece(row, col, promotedPiece);
-            }
+        if ((piece.getColor() === 'w' && row === 0) || (piece.getColor() === 'b' && row === 7)) {
+            const promotedPiece = new Queen(piece.getColor(), 'q'); // Default to Queen promotion
+            this.#board.setPiece(row, col, promotedPiece);
         }
     }
     //===========================================
@@ -230,10 +241,10 @@ export class Game {
         if (!piece) {
             console.error("Invalid undo: No piece at the destination square.");
             return;
-        }        
+        }
         this.#board.setPiece(from.row, from.col, piece);
-        this.#board.setPiece(to.row, to.col, null);        
-        this.#lastMove = this.#moveHistory.length > 0 ? this.#moveHistory[this.#moveHistory.length - 1] : null;        
+        this.#board.setPiece(to.row, to.col, null);
+        this.#lastMove = this.#moveHistory.length > 0 ? this.#moveHistory[this.#moveHistory.length - 1] : null;
         this.switchTurn();
     }
     //===========================================
