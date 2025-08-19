@@ -146,6 +146,7 @@ export class Game {
                 const rook = this.#board.getPiece(fromRow, rookCol);
                 if (rook && rook instanceof Rook && !rook._hasMoved) {
                     this.#board.setPiece(fromRow, toCol + 1, rook);
+                    rook.incrementNumMoves();
                     this.#board.setPiece(fromRow, rookCol, null);
                 }
             }else if (toCol - fromCol === 2) { // Castling move
@@ -153,6 +154,7 @@ export class Game {
                 const rook = this.#board.getPiece(fromRow, rookCol);
                 if (rook && rook instanceof Rook && !rook._hasMoved) {
                     this.#board.setPiece(fromRow, toCol - 1, rook);
+                    rook.incrementNumMoves();
                     this.#board.setPiece(fromRow, rookCol, null);
                 }
             }
@@ -160,6 +162,8 @@ export class Game {
         }
 
         piece._hasMoved = true;
+        piece.incrementNumMoves();
+
 
         var moveType = "normal";
         // if(castling){
@@ -293,6 +297,10 @@ export class Game {
             this.#board.setPiece(to.row, to.col, lastMove.capture);
         }else{
             this.#board.setPiece(to.row, to.col, null);
+        }
+        piece.decrementNumMoves();
+        if(piece.getNumMoves() === 0) {
+            piece.setHasMoved(false);
         }
         this.#lastMove = this.#moveHistory.length > 0 ? this.#moveHistory[this.#moveHistory.length - 1] : null;
         this.switchTurn();
