@@ -174,8 +174,10 @@ export class Game {
         //add an passant for the pawn
         if (piece instanceof Pawn) {
             if (this.#lastMove && this.#lastMove.piece instanceof Pawn && this.#lastMove.piece.getColor() !== piece.getColor()) {
-                const [row, col] = this.#lastMove.to;
-                if (row === fromRow + (piece.getColor() === 'w' ? -1 : 1) && (col === fromCol - 1 || col === fromCol + 1)) {
+                //const anpassant = [row, col];
+                var row = this.#lastMove.to.row;
+                var col = this.#lastMove.to.col;
+                if (fromRow === row && (row - this.#lastMove.from.y !== 1 || row - this.#lastMove.from.y !== -1) && col === fromCol + 1 || col === fromCol - 1) {
                     validMoves.push([row, col]);
                 }
             }
