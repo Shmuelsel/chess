@@ -3,6 +3,7 @@ import { Piece } from "./pieces/Piece.js";
 import { Pawn } from "./pieces/Pawn.js";
 import { King } from "./pieces/King.js";
 import { Queen } from "./pieces/Queen.js";
+import { Rook } from "./pieces/Rook.js";
 
 
 
@@ -19,6 +20,7 @@ export class Game {
     #check = { w: false, b: false };
     #lastMove = null;
     #enPassant = null;
+    #castling = { w: { kingside: false, queenside: false }, b: { kingside: false, queenside: false } };
 
 
     constructor() {
@@ -136,9 +138,25 @@ export class Game {
         }
 
         if (piece instanceof King) {
+            if (fromCol - toCol === 2) { // Castling move
+                const rookCol = 0; // Determine rook's column
+                const rook = this.#board.getPiece(fromRow, rookCol);
+                if (rook && rook instanceof Rook && !rook._hasMoved) {
+                    this.#board.setPiece(fromRow, toCol + 1, rook);
+                    this.#board.setPiece(fromRow, rookCol, null);
+                }
+            }else if (toCol - fromCol === 2) { // Castling move
+                const rookCol = 7; // Determine rook's column
+                const rook = this.#board.getPiece(fromRow, rookCol);
+                if (rook && rook instanceof Rook && !rook._hasMoved) {
+                    this.#board.setPiece(fromRow, toCol - 1, rook);
+                    this.#board.setPiece(fromRow, rookCol, null);
+                }
+            }
             this.updateKingPosition(toRow, toCol);
         }
 
+        piece._hasMoved = true;
 
         this.#lastMove = { piece: piece, from: { row: fromRow, col: fromCol }, to: { row: toRow, col: toCol } };
         this.addMoveToHistory(this.#lastMove);
@@ -168,6 +186,8 @@ export class Game {
     calcMoves(fromRow, fromCol, piece) {
         const validMoves = [];
         const legalMoves = piece.getLegalMoves(fromRow, fromCol, this.#board);
+        //console.log(legalMoves);
+
         legalMoves.forEach(move => {
             const [row, col] = move;
             const tempBoard = this.#board.clone();
@@ -195,6 +215,26 @@ export class Game {
                 }
             }
         }
+
+        //add castling
+        if (piece instanceof King) {
+            const row = piece.getColor() === 'w' ? 7 : 0;
+            if(!piece._hasMoved && !this.#board.getSquare(row, 5).isOccupied() && !this.#board.getSquare(row, 6).isOccupied()) {
+                if(this.#board.getSquare(row, 7).isOccupied() && this.#board.getSquare(row, 7).getPiece() instanceof Rook && !this.#board.getSquare(row, 7).getPiece()._hasMoved) {
+                    this.#castling[this.#currentTurn].kingside = true;
+                    validMoves.push([row, 6]); // Kingside castling
+                }
+            }
+            if(!piece._hasMoved && !this.#board.getSquare(row, 1).isOccupied() && !this.#board.getSquare(row, 2).isOccupied() && !this.#board.getSquare(row, 3).isOccupied()) {
+                if(this.#board.getSquare(row, 0).isOccupied() && this.#board.getSquare(row, 0).getPiece() instanceof Rook && !this.#board.getSquare(row, 0).getPiece()._hasMoved) {
+                    console.log(!this.#board.getSquare(row, 0).getPiece()._hasMoved);
+                    
+                    this.#castling[this.#currentTurn].queenside = true;
+                    validMoves.push([row, 2]); // Queenside castling
+                }
+            }
+        }
+
         return validMoves;
     }
     //===========================================

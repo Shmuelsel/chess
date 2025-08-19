@@ -26,6 +26,14 @@ export class King extends Piece {
                 }
             }
         }
+
+        // Check for castling rights
+        const castlingRights = this.getCastlingRights(board);
+        if (castlingRights) {
+            moves.push(...castlingRights);
+        }
+        //console.log(moves);
+
         return moves;
     }
 
@@ -40,5 +48,26 @@ export class King extends Piece {
 
     clone() {
         return new King(this._color);
+    }
+
+    getCastlingRights(board) {
+        const castlingRights = [];
+        const row = this._color === PieceColor.WHITE ? 7 : 0;
+
+        // Check kingside castling
+        if ((this._color === PieceColor.WHITE && this._color === 'w') || (this._color === PieceColor.BLACK && this._color === 'b')) {
+            if (!this.getHasMoved() && board.getSquare(row, 7).isOccupied() && !board.getSquare(row, 0).isOccupied()) {
+                castlingRights.push([row, 6]); // Kingside castling
+            }
+        }
+
+        // Check queenside castling
+        if ((this._color === PieceColor.WHITE && this._color === 'w') || (this._color === PieceColor.BLACK && this._color === 'b')) {
+            if (!this.getHasMoved() && !board.getSquare(row, 3).isOccupied() &&  !board.getSquare(row, 2).isOccupied() && !board.getSquare(row, 1).isOccupied()) {
+                castlingRights.push([row, 2]); // Queenside castling
+            }
+        }
+
+        return castlingRights;
     }
 } 
