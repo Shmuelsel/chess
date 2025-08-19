@@ -131,10 +131,17 @@ export class Game {
         this.#board.setPiece(toRow, toCol, piece);
         this.#board.setPiece(fromRow, fromCol, null);
 
+        this.#lastMove = { piece: piece, move: { from: { row: fromRow, col: fromCol }, to: { row: toRow, col: toCol } }, capture: capturePiece, special: null };
+
+
         if (piece instanceof Pawn) {
             this.promotePawnIfNeeded(toRow, toCol, piece);
             if (this.#enPassant && this.#enPassant.row === fromRow && this.#enPassant.col === fromCol && this.#enPassant.col !== toCol) {
                 capturePiece = this.#board.getPiece(this.#enPassant.row, toCol);
+                this.#lastMove.capture = capturePiece;
+                console.log("En passant captured:", capturePiece);
+
+                this.#lastMove.special = "en passant";
                 this.#board.setPiece(this.#enPassant.row, toCol, null);
                 console.log("En passant captured:", this.#enPassant);
             }
@@ -146,6 +153,7 @@ export class Game {
                 const rook = this.#board.getPiece(fromRow, rookCol);
                 if (rook && rook instanceof Rook && !rook._hasMoved) {
                     this.#board.setPiece(fromRow, toCol + 1, rook);
+                    this.#lastMove.special = "queenside castling";
                     rook.incrementNumMoves();
                     this.#board.setPiece(fromRow, rookCol, null);
                 }
@@ -154,6 +162,7 @@ export class Game {
                 const rook = this.#board.getPiece(fromRow, rookCol);
                 if (rook && rook instanceof Rook && !rook._hasMoved) {
                     this.#board.setPiece(fromRow, toCol - 1, rook);
+                    this.#lastMove.special = "kingside castling";
                     rook.incrementNumMoves();
                     this.#board.setPiece(fromRow, rookCol, null);
                 }
@@ -174,7 +183,6 @@ export class Game {
 
         //this.#lastMove = { piece: piece, from: { row: fromRow, col: fromCol }, to: { row: toRow, col: toCol } };
         // last move for castle or an passant and capture eg move capture type
-        this.#lastMove = { piece: piece, move: { from: { row: fromRow, col: fromCol }, to: { row: toRow, col: toCol } }, capture: capturePiece, special: null };
         this.addMoveToHistory(this.#lastMove);
 
         //console.log(this.#moveHistory);
@@ -202,7 +210,7 @@ export class Game {
     calcMoves(fromRow, fromCol, piece) {
         const validMoves = [];
         const legalMoves = piece.getLegalMoves(fromRow, fromCol, this.#board);
-        console.log(legalMoves);
+        //console.log(legalMoves);
 
         legalMoves.forEach(move => {
             const [row, col] = move;
@@ -283,7 +291,7 @@ export class Game {
     }
     //===========================================
 
-    unduMove() {
+    undoMove() {
         if (this.#moveHistory.length === 0) {
             console.error("No moves to undo.");
             return;
@@ -294,7 +302,13 @@ export class Game {
         const piece = lastMove.piece;
         this.#board.setPiece(from.row, from.col, piece);
         if(lastMove.capture) {
-            this.#board.setPiece(to.row, to.col, lastMove.capture);
+            if(lastMove.special === "en passant") {
+                const direction = piece.getColor() === 'w' ? 1 : -1;
+                this.#board.setPiece(to.row + direction, to.col, lastMove.capture);
+                this.#board.setPiece(to.row, to.col, null);
+            } else {
+                this.#board.setPiece(to.row, to.col, lastMove.capture);
+            }
         }else{
             this.#board.setPiece(to.row, to.col, null);
         }
