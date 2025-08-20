@@ -144,9 +144,9 @@ export class Game {
             from: { row: fromRow, col: fromCol },
             to: { row: toRow, col: toCol },
           },
-          capture: capturePiece,
         },
       ],
+      capture: capturePiece,
       special: null,
     };
 
@@ -265,8 +265,8 @@ export class Game {
     if (piece instanceof Pawn) {
       if (
         this.#lastMove &&
-        this.#lastMove.piece instanceof Pawn &&
-        this.#lastMove.piece.getColor() !== piece.getColor()
+        this.#lastMove.actions[0].piece instanceof Pawn &&
+        this.#lastMove.actions[0].piece.getColor() !== piece.getColor()
       ) {
         var row = this.#lastMove.actions[0].move.to.row;
         var col = this.#lastMove.actions[0].move.to.col;
@@ -374,7 +374,7 @@ export class Game {
       const to = action.move.to;
       const piece = action.piece;
       this.#board.setPiece(from.row, from.col, piece);
-      if (action.capture) {
+      if (lastMove.capture) {
         if (lastMove.special === "en passant") {
           const direction = piece.getColor() === "w" ? 1 : -1;
           this.#board.setPiece(to.row + direction, to.col, lastMove.capture);
