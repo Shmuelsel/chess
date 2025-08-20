@@ -57,7 +57,7 @@ const GameComponent = ({ onBack }) => {
             const square = game.getBoard().getSquare(row, col);
             const piece = square.getPiece();
             const validMoves = game.calcMoves(row, col, piece);
-            console.log(validMoves);
+            //console.log(validMoves);
 
             if (validMoves.length <= 0) {
                 console.error("No valid moves for the selected piece.");

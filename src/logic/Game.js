@@ -295,8 +295,10 @@ export class Game {
       if (
         !piece._hasMoved &&
         !this.#board.getSquare(row, 5).isOccupied() &&
-        !this.#board.getSquare(row, 6).isOccupied()
+        !this.#board.getSquare(row, 6).isOccupied() &&
+        !this.#board.getThreatenedSquares(this.getCurrentTurn()).some((sq) => sq[0] === row && (sq[1] === 4 ||sq[1] === 5 || sq[1] === 6))
       ) {
+        
         if (
           this.#board.getSquare(row, 7).isOccupied() &&
           this.#board.getSquare(row, 7).getPiece() instanceof Rook &&
@@ -310,7 +312,8 @@ export class Game {
         !piece._hasMoved &&
         !this.#board.getSquare(row, 1).isOccupied() &&
         !this.#board.getSquare(row, 2).isOccupied() &&
-        !this.#board.getSquare(row, 3).isOccupied()
+        !this.#board.getSquare(row, 3).isOccupied() &&
+        !this.#board.getThreatenedSquares(this.getCurrentTurn()).some((sq) => sq[0] === row && (sq[1] === 1 || sq[1] === 2 || sq[1] === 3 || sq[1] === 4))
       ) {
         if (
           this.#board.getSquare(row, 0).isOccupied() &&
