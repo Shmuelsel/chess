@@ -262,28 +262,24 @@ export class Game {
     });
 
     //add an passant for the pawn
-    if (piece instanceof Pawn) {
-      if (
-        this.#lastMove &&
-        this.#lastMove.actions[0].piece instanceof Pawn &&
-        this.#lastMove.actions[0].piece.getColor() !== piece.getColor()
-      ) {
-        var row = this.#lastMove.actions[0].move.to.row;
-        var col = this.#lastMove.actions[0].move.to.col;
+    if (piece instanceof Pawn && this.#lastMove) {
+      var lastMovePiece = this.#lastMove.actions[0].piece;
+      if ( lastMovePiece instanceof Pawn && lastMovePiece.getColor() !== piece.getColor() ) {
+        
+        var lastMoveFromRow = this.#lastMove.actions[0].move.from.row;
+        var lastMoveFromCol = this.#lastMove.actions[0].move.from.col;
+        var lastMoveToRow = this.#lastMove.actions[0].move.to.row;
+        var lastMoveToCol = this.#lastMove.actions[0].move.to.col;
         if (
-          this.#lastMove &&
-          Math.abs(
-            this.#lastMove.actions[0].move.from.row - this.#lastMove.actions[0].move.to.row
-          ) === 2 &&
-          row === fromRow &&
-          Math.abs(col - fromCol) === 1 &&
-          piece.getColor() === this.#currentTurn
-        ) {
+          Math.abs(lastMoveFromRow - lastMoveToRow) === 2 && lastMoveToRow === fromRow &&
+          Math.abs(lastMoveToCol - fromCol) === 1 && piece.getColor() === this.#currentTurn ) {
+
           if (piece.getColor() === "w") {
-            validMoves.push([fromRow - 1, col]);
+            validMoves.push([fromRow - 1, lastMoveToCol]);
           } else {
-            validMoves.push([fromRow + 1, col]);
+            validMoves.push([fromRow + 1, lastMoveToCol]);
           }
+
           this.#enPassant = { row: fromRow, col: fromCol };
         }
       }
@@ -296,9 +292,9 @@ export class Game {
         !piece._hasMoved &&
         !this.#board.getSquare(row, 5).isOccupied() &&
         !this.#board.getSquare(row, 6).isOccupied() &&
-        !this.#board.getThreatenedSquares(this.getCurrentTurn()).some((sq) => sq[0] === row && (sq[1] === 4 ||sq[1] === 5 || sq[1] === 6))
+        !this.#board.getThreatenedSquares(this.getCurrentTurn()).some((sq) => sq[0] === row && (sq[1] === 4 || sq[1] === 5 || sq[1] === 6))
       ) {
-        
+
         if (
           this.#board.getSquare(row, 7).isOccupied() &&
           this.#board.getSquare(row, 7).getPiece() instanceof Rook &&
@@ -416,9 +412,9 @@ export class Game {
     newGame.#check = { ...this.#check };
     newGame.#lastMove = this.#lastMove
       ? {
-          from: { ...this.#lastMove.actions.move.from },
-          to: { ...this.#lastMove.actions.move.to },
-        }
+        from: { ...this.#lastMove.actions.move.from },
+        to: { ...this.#lastMove.actions.move.to },
+      }
       : null;
     return newGame;
   }
