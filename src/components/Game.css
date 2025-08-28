@@ -1,4 +1,42 @@
 .game{
     display: inline-block;
+    background-color: aliceblue;
+}
 
+.turn-indicator {
+    font-size: 1.2em;
+    margin: 10px 0;
+}
+
+.winner-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 2px solid #333;
+    animation: bounce 0.5s infinite;
+    border-radius: 10px;
+    padding: 20px;
+    z-index: 1000;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translate(-50%, -50%) translateY(0);
+    }
+    50% {
+        transform: translate(-50%, -50%) translateY(-10px);
+    }
+}
+
+/* .winner-message {
+    font-size: 1.5em;
+    color: green;
+} */
+
+.clocks {
+    display: flex;
+    justify-content: space-around;
+    margin: 10px 0;
 }

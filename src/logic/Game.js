@@ -1,10 +1,8 @@
 import { Board } from "./Board.js";
-import { Piece } from "./pieces/Piece.js";
 import { Pawn } from "./pieces/Pawn.js";
 import { King } from "./pieces/King.js";
 import { Queen } from "./pieces/Queen.js";
 import { Rook } from "./pieces/Rook.js";
-import { type } from "@testing-library/user-event/dist/type/index.js";
 
 export class Game {
   #board;
@@ -28,6 +26,7 @@ export class Game {
     this.#board = new Board();
     this.#kingPos = { b: { x: 4, y: 0 }, w: { x: 4, y: 7 } };
     this.#moveHistory = [];
+    this.#lastMove = null;
   }
   //===========================================
 
@@ -39,6 +38,7 @@ export class Game {
   reset() {
     this.#board.resetBoard();
     this.#moveHistory = [];
+    this.#lastMove = null;
     this.#currentTurn = "w";
     this.#gameOver = false;
     this.#winner = null;
@@ -210,7 +210,6 @@ export class Game {
     piece._hasMoved = true;
     piece.incrementNumMoves();
 
-    var moveType = "normal";
     // if(castling){
     //     moveType = "castling";
     // }else if (this.#enPassant) {
@@ -267,7 +266,6 @@ export class Game {
       if ( lastMovePiece instanceof Pawn && lastMovePiece.getColor() !== piece.getColor() ) {
         
         var lastMoveFromRow = this.#lastMove.actions[0].move.from.row;
-        var lastMoveFromCol = this.#lastMove.actions[0].move.from.col;
         var lastMoveToRow = this.#lastMove.actions[0].move.to.row;
         var lastMoveToCol = this.#lastMove.actions[0].move.to.col;
         if (
@@ -367,6 +365,9 @@ export class Game {
       console.error("No moves to undo.");
       return;
     }
+    if (this.#winner) {
+      this.#winner = null;
+    }
     const lastMove = this.#moveHistory.pop();
     lastMove.actions.forEach((action) => {
       const from = action.move.from;
@@ -422,5 +423,10 @@ export class Game {
 
   getLastMove() {
     return this.#lastMove;
+  }
+  //===========================================
+
+  getWinner() {
+    return this.#winner;
   }
 }
