@@ -1,4 +1,5 @@
-import React, { createContext, useContext } from "react";
+import React, { createContext, use, useContext } from "react";
+import ChessEngine from "../engine/stockfishWorker";
 import { Game } from "../logic/Game";
 import Board from "./Board";
 import "./Game.css";
@@ -20,6 +21,15 @@ const GameComponent = ({ onBack }) => {
     const [lastMove, setLastMove] = React.useState(null);
     const [whiteClock, setWhiteClock] = React.useState(5 * 60);
     const [blackClock, setBlackClock] = React.useState(5 * 60);
+   
+    React.useEffect(() => {
+        const engine = new ChessEngine();
+
+        setTimeout(async () => {
+            const bestMove = await engine.getBestMove(game.getMoves(), 12);
+            console.log("Best Move:", bestMove);
+        }, 1000);
+    }, []);
 
     React.useEffect(() => {
         const timer = setInterval(() => {

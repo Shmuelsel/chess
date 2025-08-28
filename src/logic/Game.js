@@ -7,6 +7,7 @@ import { Rook } from "./pieces/Rook.js";
 export class Game {
   #board;
   #moveHistory = [];
+  #stepsForStockfish = [];
   #currentTurn = "w";
   #enemyColor = this.#currentTurn === "w" ? "b" : "w";
   #gameOver = false;
@@ -26,6 +27,7 @@ export class Game {
     this.#board = new Board();
     this.#kingPos = { b: { x: 4, y: 0 }, w: { x: 4, y: 7 } };
     this.#moveHistory = [];
+    this.#stepsForStockfish = [];
     this.#lastMove = null;
   }
   //===========================================
@@ -136,6 +138,11 @@ export class Game {
     this.#board.setPiece(toRow, toCol, piece);
     this.#board.setPiece(fromRow, fromCol, null);
 
+    // this.#stepsForStockfish.push({
+    //   from: { row: fromRow, col: fromCol },
+    //   to: { row: toRow, col: toCol },
+    // });
+
     this.#lastMove = {
       actions: [
         {
@@ -219,7 +226,7 @@ export class Game {
     //this.#lastMove = { piece: piece, from: { row: fromRow, col: fromCol }, to: { row: toRow, col: toCol } };
     // last move for castle or an passant and capture eg move capture type
     this.addMoveToHistory(this.#lastMove);
-
+    this.boardToFEN();
     //console.log(this.#moveHistory);
   }
   //===========================================
@@ -428,5 +435,33 @@ export class Game {
 
   getWinner() {
     return this.#winner;
+  }
+  //===========================================
+
+  boardToFEN() {
+    const rows = [];
+    for (let row = 0; row < 8; row++) {
+      let emptyCount = 0;
+      const rowPieces = [];
+      for (let col = 0; col < 8; col++) {
+        const piece = this.#board.getSquare(row, col).getPiece();
+        if (piece) {
+          if (emptyCount > 0) {
+            rowPieces.push(emptyCount);
+            emptyCount = 0;
+          }
+          rowPieces.push(piece.getSymbol());
+        } else {
+          emptyCount++;
+        }
+      }
+      if (emptyCount > 0) {
+        rowPieces.push(emptyCount);
+      }
+      rows.push(rowPieces.join(""));
+    }
+    console.log("FEN:", this.boardToFEN());
+
+    return rows.join("/");
   }
 }
