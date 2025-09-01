@@ -20,13 +20,18 @@ const GameComponent = ({ onBack, timeLimit }) => {
     const [lastMove, setLastMove] = React.useState(null);
     const [whiteClock, setWhiteClock] = React.useState(timeLimit.value);
     const [blackClock, setBlackClock] = React.useState(timeLimit.value);
+    const [startTime, setStartTime] = React.useState(Date.now());
+    
 
     React.useEffect(() => {
         const timer = setInterval(() => {
-            turn === 'w' ? setWhiteClock((prevClock) => prevClock - 1) : setBlackClock((prevClock) => prevClock - 1);
-        }, 1000);
+            const now = Date.now();
+            const diff = now - startTime;
+            setStartTime(now);
+            turn === 'w' ? setWhiteClock((prevClock) => Math.max(prevClock - diff, 0)) : setBlackClock((prevClock) => Math.max(prevClock - diff, 0));
+        }, 100);
         return () => clearInterval(timer);
-    }, [turn]);
+    }, [turn, startTime]);
 
     const handleSquareSelection = (row, col) => {
         if (selectedPiece) {
@@ -112,9 +117,9 @@ const GameComponent = ({ onBack, timeLimit }) => {
 
             <div className="game">
                 <div className="controls">
-                    <button onClick={onBack}> back</button>
-                    {game.getLastMove() && <button onClick={undoMove}>Undo Move</button>}
-                    {game.getForwardMove() && <button onClick={redoMove}>Redo Move</button>}
+                    <button className="button backBtn" onClick={onBack}> back</button>
+                    {game.getLastMove() && <button className="button undoBtn" onClick={undoMove}>Undo Move</button>}
+                    {game.getForwardMove() && <button className="button redoBtn" onClick={redoMove}>Redo Move</button>}
                 </div>
                 <div className="clocks">
                     <div className="clock">
@@ -138,7 +143,7 @@ const GameComponent = ({ onBack, timeLimit }) => {
                     threatenedSq={threatenedSquares}
                     lastMove={lastMove}
                 />
-                <button onClick={resetGame}>new game</button>
+                <button className="button rstBtn" onClick={resetGame}>new game</button>
                 {/* <div className="last-move">{lastMove ? `Last Move: ${lastMove.actions.move.from.row} to ${lastMove.actions.move.to.row}` : ''}</div> */}
             </div>
         </TurnContext.Provider>

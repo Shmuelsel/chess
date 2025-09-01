@@ -1,6 +1,8 @@
 .game{
     display: inline-block;
     background-color: aliceblue;
+    /* margin: 30px; */
+    padding: 50px;
 }
 
 .turn-indicator {
@@ -39,4 +41,39 @@
     display: flex;
     justify-content: space-around;
     margin: 10px 0;
+}
+
+.button{
+  padding: 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  margin: 10px;
+  min-width: 100px;
+}
+
+.clocks{
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: larger;
+    
+}
+
+.clock{
+    background-color: rgb(196, 196, 193);
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.timer{
+    text-align: center;
+    position: relative;
+    color: red;
+    
+}
+
+h4{
+    margin: 10px;
 }
