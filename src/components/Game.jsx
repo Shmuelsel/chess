@@ -20,18 +20,38 @@ const GameComponent = ({ onBack, timeLimit }) => {
     const [lastMove, setLastMove] = React.useState(null);
     const [whiteClock, setWhiteClock] = React.useState(timeLimit.value);
     const [blackClock, setBlackClock] = React.useState(timeLimit.value);
-    const [startTime, setStartTime] = React.useState(Date.now());
-    
+    const startTimeRef = React.useRef(Date.now());
+    const whiteElapsedRef = React.useRef(0);
+    const blackElapsedRef = React.useRef(0);
 
     React.useEffect(() => {
+        startTimeRef.current = Date.now();
+
         const timer = setInterval(() => {
             const now = Date.now();
-            const diff = now - startTime;
-            setStartTime(now);
-            turn === 'w' ? setWhiteClock((prevClock) => Math.max(prevClock - diff, 0)) : setBlackClock((prevClock) => Math.max(prevClock - diff, 0));
+            const diff = (now - startTimeRef.current) / 1000; // הפרש בשניות
+            startTimeRef.current = now;
+
+            if (turn === 'w') {
+                whiteElapsedRef.current += diff;
+
+                if (whiteElapsedRef.current >= 1) {
+                    setWhiteClock((prev) => Math.max(prev - 1, 0));
+                    whiteElapsedRef.current = 0;
+                }
+            } else {
+                blackElapsedRef.current += diff;
+
+                if (blackElapsedRef.current >= 1) {
+                    setBlackClock((prev) => Math.max(prev - 1, 0));
+                    blackElapsedRef.current = 0;
+                }
+            }
         }, 100);
+
         return () => clearInterval(timer);
-    }, [turn, startTime]);
+    }, [turn]);
+
 
     const handleSquareSelection = (row, col) => {
         if (selectedPiece) {
