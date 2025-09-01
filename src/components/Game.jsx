@@ -83,6 +83,17 @@ const GameComponent = ({ onBack }) => {
         setLastMove(game.getLastMove());
     };
 
+    const redoMove = () => {
+        game.redoMove();
+        setGame(game);
+        setSelectedPiece(null);
+        setSelectedSquare(null);
+        setValidMoves([]);
+        setThreatenedSquares(game.getBoard().getThreatenedSquares(game.getCurrentTurn() === 'w' ? 'b' : 'w'));
+        setTurn(game.getCurrentTurn());
+        setLastMove(game.getLastMove());
+    };
+
     const resetGame = () => {
         const newGame = new Game();
         setGame(newGame);
@@ -92,6 +103,8 @@ const GameComponent = ({ onBack }) => {
         setThreatenedSquares([]);
         setTurn(newGame.getCurrentTurn());
         setLastMove(null);
+        setWhiteClock(5 * 60);
+        setBlackClock(5 * 60);
     };
 
     return (
@@ -101,6 +114,7 @@ const GameComponent = ({ onBack }) => {
                 <div className="controls">
                     <button onClick={onBack}> back</button>
                     {game.getLastMove() && <button onClick={undoMove}>Undo Move</button>}
+                    {game.getForwardMove() && <button onClick={redoMove}>Redo Move</button>}
                 </div>
                 <div className="clocks">
                     <div className="clock">

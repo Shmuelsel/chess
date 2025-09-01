@@ -7,6 +7,7 @@ import { Rook } from "./pieces/Rook.js";
 export class Game {
   #board;
   #moveHistory = [];
+  #forwardMove = [];
   #currentTurn = "w";
   #enemyColor = this.#currentTurn === "w" ? "b" : "w";
   #gameOver = false;
@@ -26,6 +27,7 @@ export class Game {
     this.#board = new Board();
     this.#kingPos = { b: { x: 4, y: 0 }, w: { x: 4, y: 7 } };
     this.#moveHistory = [];
+    this.#forwardMove = [];
     this.#lastMove = null;
   }
   //===========================================
@@ -219,6 +221,7 @@ export class Game {
     //this.#lastMove = { piece: piece, from: { row: fromRow, col: fromCol }, to: { row: toRow, col: toCol } };
     // last move for castle or an passant and capture eg move capture type
     this.addMoveToHistory(this.#lastMove);
+    this.#forwardMove = [];
 
     //console.log(this.#moveHistory);
   }
@@ -391,6 +394,31 @@ export class Game {
         piece.setHasMoved(false);
       }
     });
+    this.#forwardMove.push(lastMove);
+
+    this.#lastMove =
+      this.#moveHistory.length > 0
+        ? this.#moveHistory[this.#moveHistory.length - 1]
+        : null;
+    this.switchTurn();
+  }
+  //===========================================
+
+  redoMove() {
+    if (this.#forwardMove.length === 0) {
+      console.error("No moves to redo.");
+      return;
+    }
+    const lastForwardMove = this.#forwardMove.pop();
+    lastForwardMove.actions.forEach((action) => {
+      const from = action.move.from;
+      const to = action.move.to;
+      const piece = action.piece;
+      this.#board.setPiece(to.row, to.col, piece);
+      this.#board.setPiece(from.row, from.col, null);
+      piece.incrementNumMoves();
+    });
+    this.#moveHistory.push(lastForwardMove);
     this.#lastMove =
       this.#moveHistory.length > 0
         ? this.#moveHistory[this.#moveHistory.length - 1]
@@ -428,5 +456,12 @@ export class Game {
 
   getWinner() {
     return this.#winner;
+  }
+  //===========================================
+
+  getForwardMove() {
+    return this.#forwardMove.length > 0
+      ? this.#forwardMove[this.#forwardMove.length - 1]
+      : null;
   }
 }
