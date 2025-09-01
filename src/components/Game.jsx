@@ -9,7 +9,7 @@ export const useTurn = () => {
     return useContext(TurnContext);
 }
 
-const GameComponent = ({ onBack }) => {
+const GameComponent = ({ onBack, timeLimit }) => {
 
     const [game, setGame] = React.useState(new Game());
     const [selectedSquare, setSelectedSquare] = React.useState(null);
@@ -18,8 +18,8 @@ const GameComponent = ({ onBack }) => {
     const [threatenedSquares, setThreatenedSquares] = React.useState([]);
     const [turn, setTurn] = React.useState(game.getCurrentTurn());
     const [lastMove, setLastMove] = React.useState(null);
-    const [whiteClock, setWhiteClock] = React.useState(5 * 60);
-    const [blackClock, setBlackClock] = React.useState(5 * 60);
+    const [whiteClock, setWhiteClock] = React.useState(timeLimit.value);
+    const [blackClock, setBlackClock] = React.useState(timeLimit.value);
 
     React.useEffect(() => {
         const timer = setInterval(() => {
@@ -103,8 +103,8 @@ const GameComponent = ({ onBack }) => {
         setThreatenedSquares([]);
         setTurn(newGame.getCurrentTurn());
         setLastMove(null);
-        setWhiteClock(5 * 60);
-        setBlackClock(5 * 60);
+        setWhiteClock(timeLimit.value);
+        setBlackClock(timeLimit.value);
     };
 
     return (

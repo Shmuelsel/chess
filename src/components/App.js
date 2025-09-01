@@ -7,6 +7,7 @@ import Game from './Game';
 
 const App = () => {
   const [screen, setScreen] = useState('mainMenu');
+  const [timeLimit, setTimeLimit] = useState({  label: "10:00", value: 10 * 60 });
 
   return (
     <div className="app">
@@ -17,11 +18,16 @@ const App = () => {
         />
       )}
       {screen === 'settingsMenu' && (
-        <SettingsMenu onBack={() => setScreen('mainMenu')} />
+        <SettingsMenu
+          onBack={() => setScreen('mainMenu')}
+          onTimeChange={setTimeLimit}
+          timeLimit={timeLimit}
+        />
       )}
       {screen === 'game' && (
         <Game
           onBack={() => setScreen('mainMenu')}
+          timeLimit={timeLimit}
         />
       )}
     </div>
