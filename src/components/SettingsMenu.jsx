@@ -3,12 +3,9 @@ import "./SettingsMenu.css";
 
 const SettingsMenu = ({ onBack, onTimeChange, timeLimit, setPlayerMode, setPlayerColor, playerColor, playerMode }) => {
 
-  //const playerColors = [{ label: "White", value: "w" }, { label: "Black", value: "b" }];
   const timeLevels = [{ label: "05:00", value: 5 * 60 }, { label: "10:00", value: 10 * 60 }, { label: "15:00", value: 15 * 60 }, { label: "20:00", value: 20 * 60 }];
   const playerModes = [{ label: "🕵️ vs 🕵️", value: "pvp" }, { label: "🕵️ vs 🤖", value: "pve" }];
   const [selectedTime, setSelectedTime] = React.useState(timeLevels.findIndex(t => t.value === timeLimit.value));
-  // const [playerMode, setPlayerMode] = React.useState(playerMode);
-  // const [playerColor, setPlayerColor] = React.useState(playerColor);
 
   const handleTimeClick = () => {
     var nextIndex = (selectedTime + 1) % timeLevels.length;
@@ -36,7 +33,7 @@ const SettingsMenu = ({ onBack, onTimeChange, timeLimit, setPlayerMode, setPlaye
         {playerModes.findIndex(m => m.value === playerMode) === 0 ? playerModes[0].label : playerModes[1].label}
       </button>
       <button className="button player-color" onClick={handlePlayerColorClick}>
-        {playerColor === "w" ? "Black" : "White"}
+        {playerColor === "w" ? "White" : "Black"}
       </button>
       <button className="button" onClick={onBack}>
         Back

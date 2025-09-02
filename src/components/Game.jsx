@@ -11,12 +11,12 @@ export const useTurn = () => {
 
 const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
 
-    const [game, setGame] = React.useState(new Game());
+    const [game, setGame] = React.useState(new Game(playerColor));
     const [selectedSquare, setSelectedSquare] = React.useState(null);
     const [selectedPiece, setSelectedPiece] = React.useState(null);
     const [validMoves, setValidMoves] = React.useState([]);
     const [threatenedSquares, setThreatenedSquares] = React.useState([]);
-    const [turn, setTurn] = React.useState(game.getCurrentTurn());
+    const [turn, setTurn] = React.useState("w");
     const [lastMove, setLastMove] = React.useState(null);
     const [whiteClock, setWhiteClock] = React.useState(timeLimit.value);
     const [blackClock, setBlackClock] = React.useState(timeLimit.value);
@@ -27,7 +27,7 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
     const whiteElapsedRef = React.useRef(0);
     const blackElapsedRef = React.useRef(0);
     const playerModeRef = React.useRef(playerMode);
-    const playerColorRef = React.useRef("w");
+    const playerColorRef = React.useRef(playerColor);
 
     const firstRender = React.useRef(true);
 
@@ -128,7 +128,9 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
                 }
             }
         }
+        console.log(game.getCurrentTurn());
 
+        
         if (game.getBoard().getSquare(row, col).isOccupied() && game.getBoard().getSquare(row, col).getPiece().getColor() === game.getCurrentTurn()) {
             const square = game.getBoard().getSquare(row, col);
             const piece = square.getPiece();

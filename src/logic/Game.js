@@ -8,8 +8,7 @@ export class Game {
   #board;
   #moveHistory = [];
   #forwardMove = [];
-  #currentTurn = "w";
-  #enemyColor = this.#currentTurn === "w" ? "b" : "w";
+  #currentTurn;
   #gameOver = false;
   #winner = null;
   #draw = false;
@@ -23,8 +22,11 @@ export class Game {
     b: { kingside: false, queenside: false },
   };
 
-  constructor() {
-    this.#board = new Board();
+  constructor(
+    playerColor = "w",
+  ) {
+    this.#currentTurn = "w";
+    this.#board = new Board(playerColor);
     this.#kingPos = { b: { x: 4, y: 0 }, w: { x: 4, y: 7 } };
     this.#moveHistory = [];
     this.#forwardMove = [];
@@ -433,7 +435,7 @@ export class Game {
     newGame.#board = this.#board.clone();
     newGame.#moveHistory = [...this.#moveHistory];
     newGame.#currentTurn = this.#currentTurn;
-    newGame.#enemyColor = this.#enemyColor;
+   // newGame.#enemyColor = this.#enemyColor;
     newGame.#gameOver = this.#gameOver;
     newGame.#winner = this.#winner;
     newGame.#draw = this.#draw;
