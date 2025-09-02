@@ -8,6 +8,8 @@ import Game from './Game';
 const App = () => {
   const [screen, setScreen] = useState('mainMenu');
   const [timeLimit, setTimeLimit] = useState({  label: "10:00", value: 10 * 60 });
+  const [playerMode, setPlayerMode] = useState("pve");
+  const [playerColor, setPlayerColor] = useState("w");
 
   return (
     <div className="app">
@@ -22,12 +24,18 @@ const App = () => {
           onBack={() => setScreen('mainMenu')}
           onTimeChange={setTimeLimit}
           timeLimit={timeLimit}
+          setPlayerMode={setPlayerMode}
+          setPlayerColor={setPlayerColor}
+          playerColor={playerColor}
+          playerMode={playerMode}
         />
       )}
       {screen === 'game' && (
         <Game
           onBack={() => setScreen('mainMenu')}
           timeLimit={timeLimit}
+          playerMode={playerMode}
+          playerColor={playerColor}
         />
       )}
     </div>

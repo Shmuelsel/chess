@@ -9,7 +9,7 @@ export const useTurn = () => {
     return useContext(TurnContext);
 }
 
-const GameComponent = ({ onBack, timeLimit }) => {
+const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
 
     const [game, setGame] = React.useState(new Game());
     const [selectedSquare, setSelectedSquare] = React.useState(null);
@@ -20,16 +20,56 @@ const GameComponent = ({ onBack, timeLimit }) => {
     const [lastMove, setLastMove] = React.useState(null);
     const [whiteClock, setWhiteClock] = React.useState(timeLimit.value);
     const [blackClock, setBlackClock] = React.useState(timeLimit.value);
+
+    const moves = React.useRef([]);
+    const engineRef = React.useRef(null);
     const startTimeRef = React.useRef(Date.now());
     const whiteElapsedRef = React.useRef(0);
     const blackElapsedRef = React.useRef(0);
+    const playerModeRef = React.useRef(playerMode);
+    const playerColorRef = React.useRef("w");
+
+    const firstRender = React.useRef(true);
+
+    React.useEffect(() => {
+        if (playerMode !== "pve") return;
+
+        const engine = new Worker('/stockfish/stockfish-17.1-lite-single-03e3232.js');
+        engine.postMessage('uci');
+
+        if (playerColorRef.current === "w") {
+            engineRef.current = engine;
+        } else {
+            engine.postMessage('position startpos');
+            engine.postMessage('go depth 15');
+            engineRef.current = engine;
+        }
+
+        engine.onmessage = (e) => {
+            console.log('Stockfish אומר:', e.data);
+
+            if (e.data.startsWith("bestmove")) {
+                const bestMove = e.data.split(" ")[1];
+                moves.current.push(bestMove);
+                const from = game.chessNotationToPos(bestMove.substring(0, 2));
+                const to = game.chessNotationToPos(bestMove.substring(2, 4));
+                game.movePiece(from.row, from.col, to.row, to.col);
+                game.switchTurn();
+                setTurn(game.getCurrentTurn());
+            }
+        };
+
+        return () => engine.terminate();
+    }, []);
+
+
 
     React.useEffect(() => {
         startTimeRef.current = Date.now();
 
         const timer = setInterval(() => {
             const now = Date.now();
-            const diff = (now - startTimeRef.current) / 1000; // הפרש בשניות
+            const diff = (now - startTimeRef.current) / 1000; 
             startTimeRef.current = now;
 
             if (turn === 'w') {
@@ -65,7 +105,11 @@ const GameComponent = ({ onBack, timeLimit }) => {
                 game.movePiece(selectedSquare.row, selectedSquare.col, row, col);
                 setSelectedPiece(null);
                 setSelectedSquare(null);
-                setLastMove(game.getLastMove());
+                setLastMove(prev => game.getLastMove());
+                console.log(game.getLastMove());
+
+                moves.current.push(game.getLastMove().actions[0].moveChessNotation);
+                console.log(moves);
                 setValidMoves([]);
                 var enemyColor = game.getCurrentTurn() === 'w' ? 'b' : 'w';
                 setThreatenedSquares(game.getBoard().getThreatenedSquares(enemyColor));
@@ -76,6 +120,11 @@ const GameComponent = ({ onBack, timeLimit }) => {
                     setTimeout(() => {
                         onBack();
                     }, 1000);
+                }
+                if (playerModeRef.current === "pve") {
+                    engineRef.current.postMessage(`position startpos moves ${moves.current.join(" ")}`);
+                    engineRef.current.postMessage("go depth 15");
+                    //handleEngineResponse();
                 }
             }
         }

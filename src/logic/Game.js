@@ -146,6 +146,7 @@ export class Game {
             from: { row: fromRow, col: fromCol },
             to: { row: toRow, col: toCol },
           },
+          moveChessNotation: this.posToChessNotation(fromRow, fromCol) + this.posToChessNotation(toRow, toCol),
         },
       ],
       capture: capturePiece,
@@ -463,5 +464,19 @@ export class Game {
     return this.#forwardMove.length > 0
       ? this.#forwardMove[this.#forwardMove.length - 1]
       : null;
+  }
+  //===========================================
+
+  posToChessNotation(row, col) {
+    const file = String.fromCharCode(97 + col);
+    const rank = 8 - row;
+    return `${file}${rank}`;
+  }
+  //===========================================
+
+  chessNotationToPos(notation) {
+    const file = notation.charCodeAt(0) - 97;
+    const rank = 8 - parseInt(notation.charAt(1), 10);
+    return { row: rank, col: file };
   }
 }
