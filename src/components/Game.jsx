@@ -122,9 +122,10 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
                     }, 1000);
                 }
                 if (playerModeRef.current === "pve") {
-                    engineRef.current.postMessage(`position startpos moves ${moves.current.join(" ")}`);
-                    engineRef.current.postMessage("go depth 15");
-                    //handleEngineResponse();
+                    setTimeout(() => {
+                        engineRef.current.postMessage(`position startpos moves ${moves.current.join(" ")}`);
+                        engineRef.current.postMessage("go depth 15");
+                    }, 1500);
                 }
             }
         }
@@ -207,6 +208,7 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
                     <h3 className="winner-message">Winner: {game.getWinner() === 'w' ? 'White' : 'Black'}</h3>
                 </div>}
                 <Board
+                    playerColor={playerColor}
                     board={game.getBoard()}
                     handleSquareClick={handleSquareSelection}
                     isSelected={selectedSquare}

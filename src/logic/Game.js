@@ -128,6 +128,8 @@ export class Game {
   movePiece(fromRow, fromCol, toRow, toCol) {
     const piece = this.#board.getPiece(fromRow, fromCol);
     if (!piece || piece.getColor() !== this.#currentTurn) {
+      console.log(this.#currentTurn);
+      console.log(piece);
       console.error(
         "Invalid move: No piece at the source square or not your turn."
       );

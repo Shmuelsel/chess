@@ -5,11 +5,12 @@ import { useTurn } from "./Game";
 
 
 
-const Square = ({ isSelected, onClick, square, row, col, isHighlighted, isThreatened, kingsPosition, isLastMoveFrom, isLastMoveTo }) => {
+const Square = ({ isSelected, onClick, square, row, col, isHighlighted, isThreatened, kingsPosition, isLastMoveFrom, isLastMoveTo, playerColor }) => {
   const piece = square.getPiece();
   const { turn } = useTurn();
 
-  const squareClass = `square ${piece && piece.getColor() === turn ? 'occupied' : ''}
+  const squareClass = `square ${playerColor === "w" ? "" : "transformed"}
+                              ${piece && piece.getColor() === turn ? 'occupied' : ''}
                               ${(row + col) % 2 === 0 ? 'white' : 'black'} 
                               ${isLastMoveFrom ? 'last-move-from' : ''}
                               ${isLastMoveTo ? 'last-move-to' : ''}
@@ -26,7 +27,7 @@ const Square = ({ isSelected, onClick, square, row, col, isHighlighted, isThreat
   }
 
   return (
-    <div className={`square${row}-${col}`}>
+    <div className={`square${row}-${col}` }>
       <div className={squareClass} onClick={handleClick} >
         {piece && (<PieceComponent piece={piece} />)}
       </div>

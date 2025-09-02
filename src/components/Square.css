@@ -8,6 +8,10 @@
   width: 50px;
 }
 
+.square.transformed {
+  transform: rotate(180deg);
+}
+
 .square.white {
   background-color: #ecc79e;
 }
