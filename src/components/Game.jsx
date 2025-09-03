@@ -20,6 +20,7 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
     const [lastMove, setLastMove] = React.useState(null);
     const [whiteClock, setWhiteClock] = React.useState(timeLimit.value);
     const [blackClock, setBlackClock] = React.useState(timeLimit.value);
+    const [trigger, setTrigger] = React.useState(false);
 
     const moves = React.useRef([]);
     const engineRef = React.useRef(null);
@@ -60,7 +61,7 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
         };
 
         return () => engine.terminate();
-    }, []);
+    }, [trigger]);
 
 
 
@@ -158,6 +159,7 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
         setThreatenedSquares(game.getBoard().getThreatenedSquares(game.getCurrentTurn() === 'w' ? 'b' : 'w'));
         setTurn(game.getCurrentTurn());
         setLastMove(game.getLastMove());
+        moves.current.pop();
     };
 
     const redoMove = () => {
@@ -169,10 +171,11 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
         setThreatenedSquares(game.getBoard().getThreatenedSquares(game.getCurrentTurn() === 'w' ? 'b' : 'w'));
         setTurn(game.getCurrentTurn());
         setLastMove(game.getLastMove());
+        
     };
 
     const resetGame = () => {
-        const newGame = new Game();
+        const newGame = new Game(playerColor);
         setGame(newGame);
         setSelectedPiece(null);
         setSelectedSquare(null);
@@ -182,6 +185,8 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
         setLastMove(null);
         setWhiteClock(timeLimit.value);
         setBlackClock(timeLimit.value);
+        moves.current = [];
+        setTrigger(!trigger);
     };
 
     return (
