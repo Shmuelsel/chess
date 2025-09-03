@@ -23,6 +23,7 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
     const [trigger, setTrigger] = React.useState(false);
 
     const moves = React.useRef([]);
+    const redoMoves = React.useRef([]);
     const engineRef = React.useRef(null);
     const startTimeRef = React.useRef(Date.now());
     const whiteElapsedRef = React.useRef(0);
@@ -41,15 +42,16 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
         if (playerColorRef.current === "w") {
             engineRef.current = engine;
         } else {
-            engine.postMessage('position startpos');
-            engine.postMessage('go depth 15');
+            setTimeout(() => {
+                engine.postMessage('position startpos');
+                engine.postMessage('go depth 15');
+            }, 1000);
             engineRef.current = engine;
         }
 
         engine.onmessage = (e) => {
-            console.log('Stockfish אומר:', e.data);
-
             if (e.data.startsWith("bestmove")) {
+                console.log('Stockfish :', e.data);
                 const bestMove = e.data.split(" ")[1];
                 moves.current.push(bestMove);
                 const from = game.chessNotationToPos(bestMove.substring(0, 2));
@@ -57,6 +59,12 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
                 game.movePiece(from.row, from.col, to.row, to.col);
                 game.switchTurn();
                 setTurn(game.getCurrentTurn());
+                if (game.checkGameOver()) {
+                    console.log("Game Over");
+                    setTimeout(() => {
+                        onBack();
+                    }, 3000);
+                }
             }
         };
 
@@ -70,7 +78,7 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
 
         const timer = setInterval(() => {
             const now = Date.now();
-            const diff = (now - startTimeRef.current) / 1000; 
+            const diff = (now - startTimeRef.current) / 1000;
             startTimeRef.current = now;
 
             if (turn === 'w') {
@@ -107,8 +115,6 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
                 setSelectedPiece(null);
                 setSelectedSquare(null);
                 setLastMove(prev => game.getLastMove());
-                console.log(game.getLastMove());
-
                 moves.current.push(game.getLastMove().actions[0].moveChessNotation);
                 console.log(moves);
                 setValidMoves([]);
@@ -130,9 +136,8 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
                 }
             }
         }
-        console.log(game.getCurrentTurn());
 
-        
+
         if (game.getBoard().getSquare(row, col).isOccupied() && game.getBoard().getSquare(row, col).getPiece().getColor() === game.getCurrentTurn()) {
             const square = game.getBoard().getSquare(row, col);
             const piece = square.getPiece();
@@ -159,7 +164,7 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
         setThreatenedSquares(game.getBoard().getThreatenedSquares(game.getCurrentTurn() === 'w' ? 'b' : 'w'));
         setTurn(game.getCurrentTurn());
         setLastMove(game.getLastMove());
-        moves.current.pop();
+        redoMoves.current.push(moves.current.pop());
     };
 
     const redoMove = () => {
@@ -171,7 +176,8 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
         setThreatenedSquares(game.getBoard().getThreatenedSquares(game.getCurrentTurn() === 'w' ? 'b' : 'w'));
         setTurn(game.getCurrentTurn());
         setLastMove(game.getLastMove());
-        
+        moves.current.push(redoMoves.current.pop());
+
     };
 
     const resetGame = () => {
