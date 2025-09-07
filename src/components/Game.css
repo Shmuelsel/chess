@@ -77,3 +77,14 @@
 h4{
     margin: 10px;
 }
+
+.move-history {
+    margin-top: 20px;
+    max-height: 200px;
+    max-width: 150px;
+    overflow-y: auto;
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+}

@@ -246,7 +246,15 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) =>
                     lastMove={lastMove}
                 />
                 <button className="button rstBtn" onClick={resetGame}>new game</button>
-                <input id="history-moves" type="text" readOnly value={moves.current.join(", ")} />
+                {/* <input id="history-moves" type="text" readOnly value={moves.current.join(", ")} /> */}
+                <div className="move-history">
+                    <h4>Move History</h4>
+                    <ul>
+                        {moves.current.map((move, index) => (
+                            <li key={index}>{move}</li>
+                        ))}
+                    </ul>
+                </div>
                 {/* <div className="last-move">{lastMove ? `Last Move: ${lastMove.actions.move.from.row} to ${lastMove.actions.move.to.row}` : ''}</div> */}
             </div>
         </TurnContext.Provider>
