@@ -1,8 +1,9 @@
 import React from "react";
 import "./SettingsMenu.css";
 
-const SettingsMenu = ({ onBack, onTimeChange, timeLimit, setPlayerMode, setPlayerColor, playerColor, playerMode }) => {
+const SettingsMenu = ({ onBack, onTimeChange, timeLimit, setPlayerMode, setPlayerColor, playerColor, playerMode, level, setLevel }) => {
 
+  const levels = [{ label: "Easy", value: 2 }, { label: "Medium", value: 5 }, { label: "Hard", value: 8 }, { label: "Expert", value: 12 }, { label: "Master", value: 15 }];
   const timeLevels = [{ label: "05:00", value: 5 * 60 }, { label: "10:00", value: 10 * 60 }, { label: "15:00", value: 15 * 60 }, { label: "20:00", value: 20 * 60 }];
   const playerModes = [{ label: "🕵️ vs 🕵️", value: "pvp" }, { label: "🕵️ vs 🤖", value: "pve" }];
   const [selectedTime, setSelectedTime] = React.useState(timeLevels.findIndex(t => t.value === timeLimit.value));
@@ -22,6 +23,11 @@ const SettingsMenu = ({ onBack, onTimeChange, timeLimit, setPlayerMode, setPlaye
     setPlayerColor(prev => (prev === "w" ? "b" : "w"));
   };
 
+  const handleLevelClick = () => {
+    var nextIndex = (levels.findIndex(l => l.value === level) + 1) % levels.length;
+    setLevel(levels[nextIndex].value);
+  };
+
   return (
     <div className="settings-menu">
       <h1>Settings</h1>
@@ -35,6 +41,7 @@ const SettingsMenu = ({ onBack, onTimeChange, timeLimit, setPlayerMode, setPlaye
       <button className="button player-color" onClick={handlePlayerColorClick}>
         {playerColor === "w" ? "White" : "Black"}
       </button>
+      {playerMode === "pve" && <button className="button level" onClick={handleLevelClick}>Level: {levels.find(l => l.value === level).label}</button>}
       <button className="button" onClick={onBack}>
         Back
       </button>

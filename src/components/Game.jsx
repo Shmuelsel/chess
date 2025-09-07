@@ -9,7 +9,7 @@ export const useTurn = () => {
     return useContext(TurnContext);
 }
 
-const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
+const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) => {
 
     const [game, setGame] = React.useState(new Game(playerColor));
     const [selectedSquare, setSelectedSquare] = React.useState(null);
@@ -21,6 +21,7 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
     const [whiteClock, setWhiteClock] = React.useState(timeLimit.value);
     const [blackClock, setBlackClock] = React.useState(timeLimit.value);
     const [trigger, setTrigger] = React.useState(false);
+    //const [historyMoves, setHistoryMoves] = React.useState([]);
 
     const moves = React.useRef([]);
     const redoMoves = React.useRef([]);
@@ -32,7 +33,7 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
     const playerColorRef = React.useRef(playerColor);
 
     const firstRender = React.useRef(true);
-
+    
     React.useEffect(() => {
         if (playerMode !== "pve") return;
 
@@ -44,7 +45,7 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
         } else {
             setTimeout(() => {
                 engine.postMessage('position startpos');
-                engine.postMessage('go depth 15');
+                engine.postMessage(`go depth ${level}`);
             }, 1000);
             engineRef.current = engine;
         }
@@ -54,6 +55,7 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
                 console.log('Stockfish :', e.data);
                 const bestMove = e.data.split(" ")[1];
                 moves.current.push(bestMove);
+                //setHistoryMoves(prev => [...prev, bestMove]);
                 const from = game.chessNotationToPos(bestMove.substring(0, 2));
                 const to = game.chessNotationToPos(bestMove.substring(2, 4));
                 game.movePiece(from.row, from.col, to.row, to.col);
@@ -115,8 +117,12 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
                 setSelectedPiece(null);
                 setSelectedSquare(null);
                 setLastMove(prev => game.getLastMove());
+
                 moves.current.push(game.getLastMove().actions[0].moveChessNotation);
-                console.log(moves);
+                //setHistoryMoves(prev => [...prev, game.getLastMove().actions[0].moveChessNotation]);
+                console.log(game.getLastMove().actions[0].moveChessNotation);
+                
+                //console.log(historyMoves);
                 setValidMoves([]);
                 var enemyColor = game.getCurrentTurn() === 'w' ? 'b' : 'w';
                 setThreatenedSquares(game.getBoard().getThreatenedSquares(enemyColor));
@@ -131,7 +137,10 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
                 if (playerModeRef.current === "pve") {
                     setTimeout(() => {
                         engineRef.current.postMessage(`position startpos moves ${moves.current.join(" ")}`);
-                        engineRef.current.postMessage("go depth 15");
+                        //console.log(historyMoves);
+                        
+                        //engineRef.current.postMessage(`position startpos moves ${historyMoves.join(" ")}`);
+                        engineRef.current.postMessage(`go depth ${level}`);
                     }, 1500);
                 }
             }
@@ -165,6 +174,10 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
         setTurn(game.getCurrentTurn());
         setLastMove(game.getLastMove());
         redoMoves.current.push(moves.current.pop());
+        // setHistoryMoves(prev => {
+        //     redoMoves.current.push(prev[prev.length - 1]);
+        //     return prev.slice(0, -1);
+        // });
     };
 
     const redoMove = () => {
@@ -177,7 +190,10 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
         setTurn(game.getCurrentTurn());
         setLastMove(game.getLastMove());
         moves.current.push(redoMoves.current.pop());
-
+        // setHistoryMoves(prev => {
+        //     const nextMove = redoMoves.current.pop();
+        //     return [...prev, nextMove];
+        // });
     };
 
     const resetGame = () => {
@@ -192,6 +208,8 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
         setWhiteClock(timeLimit.value);
         setBlackClock(timeLimit.value);
         moves.current = [];
+        redoMoves.current = [];
+        //setHistoryMoves([]);
         setTrigger(!trigger);
     };
 
@@ -228,6 +246,7 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor }) => {
                     lastMove={lastMove}
                 />
                 <button className="button rstBtn" onClick={resetGame}>new game</button>
+                <input id="history-moves" type="text" readOnly value={moves.current.join(", ")} />
                 {/* <div className="last-move">{lastMove ? `Last Move: ${lastMove.actions.move.from.row} to ${lastMove.actions.move.to.row}` : ''}</div> */}
             </div>
         </TurnContext.Provider>

@@ -10,6 +10,7 @@ const App = () => {
   const [timeLimit, setTimeLimit] = useState({  label: "10:00", value: 10 * 60 });
   const [playerMode, setPlayerMode] = useState("pve");
   const [playerColor, setPlayerColor] = useState("w");
+  const [level, setLevel] = useState(2);
 
   return (
     <div className="app">
@@ -28,6 +29,8 @@ const App = () => {
           setPlayerColor={setPlayerColor}
           playerColor={playerColor}
           playerMode={playerMode}
+          level={level}
+          setLevel={setLevel}
         />
       )}
       {screen === 'game' && (
@@ -36,6 +39,7 @@ const App = () => {
           timeLimit={timeLimit}
           playerMode={playerMode}
           playerColor={playerColor}
+          level={level}
         />
       )}
     </div>
