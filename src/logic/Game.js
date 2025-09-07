@@ -3,6 +3,7 @@ import { Pawn } from "./pieces/Pawn.js";
 import { King } from "./pieces/King.js";
 import { Queen } from "./pieces/Queen.js";
 import { Rook } from "./pieces/Rook.js";
+import { Position } from "./Position.js";
 
 export class Game {
   #board;
@@ -24,6 +25,7 @@ export class Game {
 
   constructor(
     playerColor = "w",
+    gameMode = { type: "pve", aiLevel: "medium" },
   ) {
     this.#currentTurn = "w";
     this.#board = new Board(playerColor);
@@ -31,6 +33,7 @@ export class Game {
     this.#moveHistory = [];
     this.#forwardMove = [];
     this.#lastMove = null;
+    
   }
   //===========================================
 

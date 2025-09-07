@@ -1,5 +1,6 @@
 import { PieceType, PieceColor } from "../pieceConstants";
 import { Piece } from "./Piece";
+import { Position } from "../Position";
 
 export class Pawn extends Piece {
     constructor(color) {

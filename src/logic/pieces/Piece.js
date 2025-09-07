@@ -1,4 +1,5 @@
 import { PieceColor, PieceType } from "../pieceConstants.js";
+import { Move } from "../Move.js";
 
 export class Piece {
     _type;
