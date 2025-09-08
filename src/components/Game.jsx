@@ -2,6 +2,7 @@ import React, { createContext, useContext } from "react";
 import { Game } from "../logic/Game";
 import Board from "./Board";
 import "./Game.css";
+import ChessBoardLabels from "./ChessBoardWithLabels";
 
 
 export const TurnContext = createContext();
@@ -236,7 +237,7 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) =>
                 {game.getWinner() && <div className="winner-popup">
                     <h3 className="winner-message">Winner: {game.getWinner() === 'w' ? 'White' : 'Black'}</h3>
                 </div>}
-                <Board
+                <ChessBoardLabels
                     playerColor={playerColor}
                     board={game.getBoard()}
                     handleSquareClick={handleSquareSelection}
