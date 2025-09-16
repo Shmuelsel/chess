@@ -32,7 +32,7 @@ const Board = ({
                       isSelected.col === colIndex
                     }
                     isHighlighted={highlightedSq.some(
-                      (move) => move[0] === rowIndex && move[1] === colIndex
+                      (move) => move.row === rowIndex && move.col === colIndex
                     )}
                     isThreatened={threatenedSq.some(
                       (move) => move[0] === rowIndex && move[1] === colIndex

@@ -7,6 +7,7 @@ import { Rook } from "./pieces/Rook";
 import { Knight } from "./pieces/Knight";
 import { Bishop } from "./pieces/Bishop";
 import { PieceType } from "./pieceConstants";
+import { Position } from "./Position";
 
 export class Board {
   #squares = [];
@@ -141,9 +142,12 @@ export class Board {
         if (piece && piece.getColor() !== color) {          
           const threatMoves = piece.getThreatMoves(row, col, this);
           if (threatMoves.length !== 0) {
-            for (const [r, c] of threatMoves) {
-              threatenedSquares.push([r, c]);
+            for (const pos of threatMoves) {
+              threatenedSquares.push(pos);
             }
+            // for (const [r, c] of threatMoves) {
+            //   threatenedSquares.push([r, c]);
+            // }
           }
         }
       }

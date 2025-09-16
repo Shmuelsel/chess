@@ -255,10 +255,9 @@ export class Game {
   calcMoves(fromRow, fromCol, piece) {
     const validMoves = [];
     const legalMoves = piece.getLegalMoves(fromRow, fromCol, this.#board);
-    //console.log(legalMoves);
+    console.log(legalMoves);
 
-    legalMoves.forEach((move) => {
-      const [row, col] = move;
+    legalMoves.forEach(({row, col}) => {
       const tempBoard = this.#board.clone();
       tempBoard.movePiece(fromRow, fromCol, row, col);
       const kingPos = tempBoard.getKingPosition(this.#currentTurn);
@@ -267,7 +266,7 @@ export class Game {
         .getThreatenedSquares(this.#currentTurn)
         .some((sq) => sq[0] === kingPos.y && sq[1] === kingPos.x);
       if (!isInCheck) {
-        validMoves.push(move);
+        validMoves.push(new Position(row, col));
       }
     });
 
@@ -330,7 +329,7 @@ export class Game {
         }
       }
     }
-
+    console.log("valid moves: ", validMoves);
     return validMoves;
   }
   //===========================================

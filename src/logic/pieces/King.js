@@ -1,5 +1,6 @@
 import { PieceColor, PieceType } from "../pieceConstants.js"
 import { Piece } from "./Piece";
+import { Position } from "../Position.js";
 
 
 export class King extends Piece {
@@ -22,7 +23,7 @@ export class King extends Piece {
                 if ((!board.getSquare(r, c).isOccupied() ||
                     board.getSquare(r, c).getPiece().getColor() !== this._color) &&
                     !board.getSquare(r, c).getThreatened()) {
-                    moves.push([r, c])
+                    moves.push(new Position(r, c))
                 }
             }
         }

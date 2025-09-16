@@ -17,7 +17,7 @@ export class Position{
     //     this.col = col;
     // }
 
-    constructor({ row, col, notation }) {
+    constructor( row, col, notation ) {
         if (notation) {
             const letterToCol = (letter) => letter.charCodeAt(0) - 97;
             this.row = parseInt(notation[1]) - 1;
@@ -27,6 +27,7 @@ export class Position{
             this.col = col;
         }
     }
+
 
     toString() {
         return `(${this.row}, ${this.col})`;

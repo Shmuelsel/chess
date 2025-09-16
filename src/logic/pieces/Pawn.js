@@ -15,22 +15,24 @@ export class Pawn extends Piece {
 
         // Move forward by one square
         if (row + direction >= 0 && row + direction < 8 && !board.getSquare(row + direction, col).isOccupied()) {
-            moves.push([row + direction, col]);
+            moves.push(new Position(row + direction, col));
             // If on starting row, can move two squares forward
             if (row === startRow && row + 2 * direction >= 0 && row + 2 * direction < 8 && !board.getSquare(row + 2 * direction, col).isOccupied()) {
-                moves.push([row + 2 * direction, col]);
+                moves.push(new Position(row + 2 * direction, col));
+                //moves.push([row + 2 * direction, col]);
             }
         }
 
         // Capture diagonally
         if (col > 0 && row + direction >= 0 && row + direction < 8 && board.getSquare(row + direction, col - 1).isOccupied() &&
             board.getSquare(row + direction, col - 1).getPiece().getColor() !== this._color) {
-            moves.push([row + direction, col - 1]);
+            moves.push(new Position(row + direction, col - 1));
         }
         if (col < 7 && row + direction >= 0 && row + direction < 8 && board.getSquare(row + direction, col + 1).isOccupied() &&
             board.getSquare(row + direction, col + 1).getPiece().getColor() !== this._color) {
-            moves.push([row + direction, col + 1]);
+            moves.push(new Position(row + direction, col + 1));
         }
+        console.log(moves);
 
         return moves;
     }

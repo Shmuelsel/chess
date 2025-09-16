@@ -107,7 +107,7 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) =>
 
     const handleSquareSelection = (row, col) => {
         if (selectedPiece) {
-            const isValid = validMoves.some(move => move[0] === row && move[1] === col);
+            const isValid = validMoves.some(move => move.row === row && move.col === col);
             validMoves.forEach(move => {
             });
             if (!isValid) {

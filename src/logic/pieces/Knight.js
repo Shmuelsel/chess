@@ -1,5 +1,6 @@
 import { PieceType } from "../pieceConstants";
 import { Piece } from "./Piece";
+import { Position } from "../Position";
 
 
 export class Knight extends Piece {
@@ -20,7 +21,7 @@ export class Knight extends Piece {
             if (r >= 0 && r < 8 && c >= 0 && c < 8) {
                 if (!board.getSquare(r, c).isOccupied() || 
                     board.getSquare(r, c).getPiece().getColor() !== this._color) {
-                moves.push([r, c]);
+                moves.push(new Position(r, c));
                 }
             }
         }
