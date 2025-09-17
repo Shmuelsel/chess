@@ -22,7 +22,6 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) =>
     const [whiteClock, setWhiteClock] = React.useState(timeLimit.value);
     const [blackClock, setBlackClock] = React.useState(timeLimit.value);
     const [trigger, setTrigger] = React.useState(false);
-    //const [historyMoves, setHistoryMoves] = React.useState([]);
 
     const moves = React.useRef([]);
     const redoMoves = React.useRef([]);
@@ -35,7 +34,8 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) =>
     const enemyColor = playerColor === "w" ? "b" : "w";
 
     const firstRender = React.useRef(true);
-    
+    const mounted = React.useRef(false);
+
     React.useEffect(() => {
         if (playerMode !== "pve") return;
 
@@ -56,14 +56,9 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) =>
             if (e.data.startsWith("bestmove")) {
                 console.log('Stockfish :', e.data);
                 const bestMove = e.data.split(" ")[1];
-                moves.current.push(bestMove);
-                //setHistoryMoves(prev => [...prev, bestMove]);
                 const from = game.chessNotationToPos(bestMove.substring(0, 2));
                 const to = game.chessNotationToPos(bestMove.substring(2, 4));
                 game.movePiece(from.row, from.col, to.row, to.col);
-                setThreatenedSquares(prev => game.getBoard().getThreatenedSquares(playerColor));
-                //console.log("Threatened squares2: ", game.getBoard().getThreatenedSquares(playerColor));
-                setLastMove(prev => game.getLastMove());
                 game.switchTurn();
                 setTurn(game.getCurrentTurn());
                 if (game.checkGameOver()) {
@@ -81,6 +76,7 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) =>
 
 
     React.useEffect(() => {
+        
         startTimeRef.current = Date.now();
 
         const timer = setInterval(() => {
@@ -104,6 +100,25 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) =>
                 }
             }
         }, 100);
+        if (firstRender.current) {
+            console.log("First render");
+
+            firstRender.current = false;
+            return;
+        }
+        // for strict mode in development
+        if (!mounted.current) {
+            mounted.current = true;
+            return;
+        }
+        setSelectedPiece(null);
+        setSelectedSquare(null);
+        setLastMove(prev => game.getLastMove());
+        moves.current.push(game.getLastMove().actions[0].moveChessNotation);
+        console.log("Moves:", moves.current);
+
+        setValidMoves([]);
+        setThreatenedSquares(prev => game.getBoard().getThreatenedSquares(turn));
 
         return () => clearInterval(timer);
     }, [turn]);
@@ -119,17 +134,7 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) =>
             }
             else {
                 game.movePiece(selectedSquare.row, selectedSquare.col, row, col);
-                setSelectedPiece(null);
-                setSelectedSquare(null);
-                setLastMove(prev => game.getLastMove());
 
-                moves.current.push(game.getLastMove().actions[0].moveChessNotation);
-                //setHistoryMoves(prev => [...prev, game.getLastMove().actions[0].moveChessNotation]);
-                console.log(game.getLastMove().actions[0].moveChessNotation);
-                
-                //console.log(historyMoves);
-                setValidMoves([]);
-                setThreatenedSquares(prev => game.getBoard().getThreatenedSquares(enemyColor));
                 game.switchTurn();
                 setTurn(game.getCurrentTurn());
                 if (game.checkGameOver()) {
@@ -141,13 +146,10 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) =>
                 if (playerModeRef.current === "pve") {
                     setTimeout(() => {
                         engineRef.current.postMessage(`position startpos moves ${moves.current.join(" ")}`);
-                        //console.log(historyMoves);
-                        
-                        //engineRef.current.postMessage(`position startpos moves ${historyMoves.join(" ")}`);
                         engineRef.current.postMessage(`go depth ${level}`);
-                        
+
                     }, 1500);
-                    
+
                 }
             }
         }
@@ -157,8 +159,6 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) =>
             const square = game.getBoard().getSquare(row, col);
             const piece = square.getPiece();
             const validMoves = game.calcMoves(row, col, piece);
-            //console.log(validMoves);
-
             if (validMoves.length <= 0) {
                 console.error("No valid moves for the selected piece.");
                 return;
@@ -180,10 +180,6 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) =>
         setTurn(game.getCurrentTurn());
         setLastMove(game.getLastMove());
         redoMoves.current.push(moves.current.pop());
-        // setHistoryMoves(prev => {
-        //     redoMoves.current.push(prev[prev.length - 1]);
-        //     return prev.slice(0, -1);
-        // });
     };
 
     const redoMove = () => {
@@ -196,10 +192,6 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) =>
         setTurn(game.getCurrentTurn());
         setLastMove(game.getLastMove());
         moves.current.push(redoMoves.current.pop());
-        // setHistoryMoves(prev => {
-        //     const nextMove = redoMoves.current.pop();
-        //     return [...prev, nextMove];
-        // });
     };
 
     const resetGame = () => {
@@ -215,7 +207,6 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) =>
         setBlackClock(timeLimit.value);
         moves.current = [];
         redoMoves.current = [];
-        //setHistoryMoves([]);
         setTrigger(!trigger);
     };
 
