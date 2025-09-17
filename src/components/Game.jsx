@@ -32,6 +32,7 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) =>
     const blackElapsedRef = React.useRef(0);
     const playerModeRef = React.useRef(playerMode);
     const playerColorRef = React.useRef(playerColor);
+    const enemyColor = playerColor === "w" ? "b" : "w";
 
     const firstRender = React.useRef(true);
     
@@ -49,7 +50,7 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) =>
                 engine.postMessage(`go depth ${level}`);
             }, 1000);
             engineRef.current = engine;
-        }
+        };
 
         engine.onmessage = (e) => {
             if (e.data.startsWith("bestmove")) {
@@ -60,6 +61,9 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) =>
                 const from = game.chessNotationToPos(bestMove.substring(0, 2));
                 const to = game.chessNotationToPos(bestMove.substring(2, 4));
                 game.movePiece(from.row, from.col, to.row, to.col);
+                setThreatenedSquares(prev => game.getBoard().getThreatenedSquares(playerColor));
+                //console.log("Threatened squares2: ", game.getBoard().getThreatenedSquares(playerColor));
+                setLastMove(prev => game.getLastMove());
                 game.switchTurn();
                 setTurn(game.getCurrentTurn());
                 if (game.checkGameOver()) {
@@ -125,8 +129,7 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) =>
                 
                 //console.log(historyMoves);
                 setValidMoves([]);
-                var enemyColor = game.getCurrentTurn() === 'w' ? 'b' : 'w';
-                setThreatenedSquares(game.getBoard().getThreatenedSquares(enemyColor));
+                setThreatenedSquares(prev => game.getBoard().getThreatenedSquares(enemyColor));
                 game.switchTurn();
                 setTurn(game.getCurrentTurn());
                 if (game.checkGameOver()) {
@@ -142,7 +145,9 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) =>
                         
                         //engineRef.current.postMessage(`position startpos moves ${historyMoves.join(" ")}`);
                         engineRef.current.postMessage(`go depth ${level}`);
+                        
                     }, 1500);
+                    
                 }
             }
         }
@@ -171,7 +176,7 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) =>
         setSelectedPiece(null);
         setSelectedSquare(null);
         setValidMoves([]);
-        setThreatenedSquares(game.getBoard().getThreatenedSquares(game.getCurrentTurn() === 'w' ? 'b' : 'w'));
+        setThreatenedSquares(game.getBoard().getThreatenedSquares(enemyColor));
         setTurn(game.getCurrentTurn());
         setLastMove(game.getLastMove());
         redoMoves.current.push(moves.current.pop());
@@ -187,7 +192,7 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) =>
         setSelectedPiece(null);
         setSelectedSquare(null);
         setValidMoves([]);
-        setThreatenedSquares(game.getBoard().getThreatenedSquares(game.getCurrentTurn() === 'w' ? 'b' : 'w'));
+        setThreatenedSquares(game.getBoard().getThreatenedSquares(enemyColor));
         setTurn(game.getCurrentTurn());
         setLastMove(game.getLastMove());
         moves.current.push(redoMoves.current.pop());

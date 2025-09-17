@@ -152,6 +152,7 @@ export class Board {
         }
       }
     }
+    //console.log("Threatened squares: ", threatenedSquares);
     return threatenedSquares;
   }
   //=============================================

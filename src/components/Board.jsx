@@ -34,9 +34,9 @@ const Board = ({
                     isHighlighted={highlightedSq.some(
                       (move) => move.row === rowIndex && move.col === colIndex
                     )}
-                    isThreatened={threatenedSq.some(
-                      (move) => move[0] === rowIndex && move[1] === colIndex
-                    )}
+                    isThreatened={threatenedSq.some(pos => {
+                      return pos.row === rowIndex && pos.col === colIndex
+                    })}
                     square={square}
                     onClick={() => handleSquareClick(rowIndex, colIndex)}
                     row={rowIndex}

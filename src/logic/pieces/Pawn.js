@@ -32,7 +32,7 @@ export class Pawn extends Piece {
             board.getSquare(row + direction, col + 1).getPiece().getColor() !== this._color) {
             moves.push(new Position(row + direction, col + 1));
         }
-        console.log(moves);
+        //console.log(moves);
 
         return moves;
     }
@@ -43,8 +43,8 @@ export class Pawn extends Piece {
         var direction = this._color === PieceColor.WHITE ? -1 : 1;
         for (var dc = -1; dc <= 1; dc += 2) { // Check left and right captures
             if (col + dc >= 0 && col + dc < 8) {
-                if (row + direction >= 0 && row + direction < 8) {
-                    threatMoves.push([row + direction, col + dc]);
+                if (row + direction >= 0 && row + direction < 8 && board.getSquare(row + direction, col + dc).isOccupied() && board.getSquare(row + direction, col + dc).getPiece().getColor() !== this._color) {
+                    threatMoves.push(new Position(row + direction, col + dc));
                 }
             }
         }

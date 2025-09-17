@@ -31,6 +31,8 @@ export class Queen extends Piece {
                 c += dy;
             }
         }
+        //console.log("Queen legal moves: ", moves);
+
         return moves;
     }
 
