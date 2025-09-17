@@ -1,5 +1,4 @@
 import { Square } from "./Square";
-import { Piece } from "./pieces/Piece";
 import { Pawn } from "./pieces/Pawn";
 import { King } from "./pieces/King";
 import { Queen } from "./pieces/Queen";
@@ -7,7 +6,6 @@ import { Rook } from "./pieces/Rook";
 import { Knight } from "./pieces/Knight";
 import { Bishop } from "./pieces/Bishop";
 import { PieceType } from "./pieceConstants";
-import { Position } from "./Position";
 
 export class Board {
   #squares = [];

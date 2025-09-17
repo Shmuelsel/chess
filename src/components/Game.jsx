@@ -31,10 +31,11 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) =>
     const blackElapsedRef = React.useRef(0);
     const playerModeRef = React.useRef(playerMode);
     const playerColorRef = React.useRef(playerColor);
-    const enemyColor = playerColor === "w" ? "b" : "w";
-
     const firstRender = React.useRef(true);
     const mounted = React.useRef(false);
+
+    const enemyColor = playerColor === "w" ? "b" : "w";
+
 
     React.useEffect(() => {
         if (playerMode !== "pve") return;
@@ -61,22 +62,15 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) =>
                 game.movePiece(from.row, from.col, to.row, to.col);
                 game.switchTurn();
                 setTurn(game.getCurrentTurn());
-                if (game.checkGameOver()) {
-                    console.log("Game Over");
-                    setTimeout(() => {
-                        onBack();
-                    }, 3000);
-                }
             }
         };
-
         return () => engine.terminate();
     }, [trigger]);
 
 
 
     React.useEffect(() => {
-        
+
         startTimeRef.current = Date.now();
 
         const timer = setInterval(() => {
@@ -111,6 +105,12 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) =>
             mounted.current = true;
             return;
         }
+        if (game.checkGameOver()) {
+            console.log("Game Over");
+            setTimeout(() => {
+                onBack();
+            }, 3000);
+        }
         setSelectedPiece(null);
         setSelectedSquare(null);
         setLastMove(prev => game.getLastMove());
@@ -137,12 +137,7 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) =>
 
                 game.switchTurn();
                 setTurn(game.getCurrentTurn());
-                if (game.checkGameOver()) {
-                    console.log("Game Over");
-                    setTimeout(() => {
-                        onBack();
-                    }, 1000);
-                }
+
                 if (playerModeRef.current === "pve") {
                     setTimeout(() => {
                         engineRef.current.postMessage(`position startpos moves ${moves.current.join(" ")}`);

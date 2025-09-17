@@ -1,4 +1,4 @@
-import { PieceColor, PieceType } from "../pieceConstants.js"
+import { PieceType } from "../pieceConstants.js"
 import { Piece } from "./Piece";
 import { Position } from "../Position.js";
 
