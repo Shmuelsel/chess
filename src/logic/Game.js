@@ -33,7 +33,7 @@ export class Game {
     this.#moveHistory = [];
     this.#forwardMove = [];
     this.#lastMove = null;
-    
+
   }
   //===========================================
 
@@ -130,9 +130,8 @@ export class Game {
 
   movePiece(fromRow, fromCol, toRow, toCol) {
     const piece = this.#board.getPiece(fromRow, fromCol);
+
     if (!piece || piece.getColor() !== this.#currentTurn) {
-      console.log(this.#currentTurn);
-      console.log(piece);
       console.error(
         "Invalid move: No piece at the source square or not your turn."
       );
@@ -161,77 +160,81 @@ export class Game {
     };
 
     if (piece instanceof Pawn) {
-      this.promotePawnIfNeeded(toRow, toCol, piece);
-      if (
-        this.#enPassant &&
-        this.#enPassant.row === fromRow &&
-        this.#enPassant.col === fromCol &&
-        this.#enPassant.col !== toCol
-      ) {
-        capturePiece = this.#board.getPiece(this.#enPassant.row, toCol);
-        this.#lastMove.capture = capturePiece;
-        console.log("En passant captured:", capturePiece);
-
-        this.#lastMove.special = "en passant";
-        this.#board.setPiece(this.#enPassant.row, toCol, null);
-        console.log("En passant captured:", this.#enPassant);
-      }
+      this.movePieceAnPassant(fromRow, fromCol, toRow, toCol, piece);
     }
 
     if (piece instanceof King) {
-      if (fromCol - toCol === 2) {
-        // Castling move
-        const rookCol = 0; // Determine rook's column
-        const rook = this.#board.getPiece(fromRow, rookCol);
-        if (rook && rook instanceof Rook && !rook._hasMoved) {
-          this.#board.setPiece(fromRow, toCol + 1, rook);
-          this.#lastMove.special = "queenside castling";
-          this.#lastMove.actions.push({
-            piece: rook,
-            move: {
-              from: { row: fromRow, col: rookCol },
-              to: { row: fromRow, col: toCol + 1 },
-            },
-          });
-          rook.incrementNumMoves();
-          this.#board.setPiece(fromRow, rookCol, null);
-        }
-      } else if (toCol - fromCol === 2) {
-        // Castling move
-        const rookCol = 7; // Determine rook's column
-        const rook = this.#board.getPiece(fromRow, rookCol);
-        if (rook && rook instanceof Rook && !rook._hasMoved) {
-          this.#board.setPiece(fromRow, toCol - 1, rook);
-          this.#lastMove.special = "kingside castling";
-          this.#lastMove.actions.push({
-            piece: rook,
-            move: {
-              from: { row: fromRow, col: rookCol },
-              to: { row: fromRow, col: toCol - 1 },
-            },
-          });
-          rook.incrementNumMoves();
-          this.#board.setPiece(fromRow, rookCol, null);
-        }
-      }
-      this.updateKingPosition(toRow, toCol);
+      this.movePieceCastling(fromRow, fromCol, toRow, toCol, piece);
     }
 
     piece._hasMoved = true;
     piece.incrementNumMoves();
-
-    // if(castling){
-    //     moveType = "castling";
-    // }else if (this.#enPassant) {
-    //     moveType = "en passant";
-    // }
-
-    //this.#lastMove = { piece: piece, from: { row: fromRow, col: fromCol }, to: { row: toRow, col: toCol } };
-    // last move for castle or an passant and capture eg move capture type
     this.addMoveToHistory(this.#lastMove);
     this.#forwardMove = [];
+  }
+  //===========================================
+  movePieceAnPassant(fromRow, fromCol, toRow, toCol, piece) {
+    //const piece = this.#board.getPiece(fromRow, fromCol);
 
-    //console.log(this.#moveHistory);
+    var capturePiece = this.#board.getPiece(toRow, toCol) ? this.#board.getPiece(toRow, toCol) : null;
+
+    this.promotePawnIfNeeded(toRow, toCol, piece);
+
+    if (
+      this.#enPassant &&
+      this.#enPassant.row === fromRow &&
+      this.#enPassant.col === fromCol &&
+      this.#enPassant.col !== toCol
+    ) {
+
+      capturePiece = this.#board.getPiece(this.#enPassant.row, toCol);
+      this.#lastMove.capture = capturePiece;
+      console.log("En passant captured:", capturePiece);
+
+      this.#lastMove.special = "en passant";
+      this.#board.setPiece(this.#enPassant.row, toCol, null);
+      console.log("En passant captured:", this.#enPassant);
+    }
+  }
+  //===========================================
+
+  movePieceCastling(fromRow, fromCol, toRow, toCol, piece) {
+    if (fromCol - toCol === 2) {
+      // Castling move
+      const rookCol = 0; // Determine rook's column
+      const rook = this.#board.getPiece(fromRow, rookCol);
+      if (rook && rook instanceof Rook && !rook._hasMoved) {
+        this.#board.setPiece(fromRow, toCol + 1, rook);
+        this.#lastMove.special = "queenside castling";
+        this.#lastMove.actions.push({
+          piece: rook,
+          move: {
+            from: { row: fromRow, col: rookCol },
+            to: { row: fromRow, col: toCol + 1 },
+          },
+        });
+        rook.incrementNumMoves();
+        this.#board.setPiece(fromRow, rookCol, null);
+      }
+    } else if (toCol - fromCol === 2) {
+      // Castling move
+      const rookCol = 7; // Determine rook's column
+      const rook = this.#board.getPiece(fromRow, rookCol);
+      if (rook && rook instanceof Rook && !rook._hasMoved) {
+        this.#board.setPiece(fromRow, toCol - 1, rook);
+        this.#lastMove.special = "kingside castling";
+        this.#lastMove.actions.push({
+          piece: rook,
+          move: {
+            from: { row: fromRow, col: rookCol },
+            to: { row: fromRow, col: toCol - 1 },
+          },
+        });
+        rook.incrementNumMoves();
+        this.#board.setPiece(fromRow, rookCol, null);
+      }
+    }
+    this.updateKingPosition(toRow, toCol);
   }
   //===========================================
 
@@ -255,9 +258,8 @@ export class Game {
   calcMoves(fromRow, fromCol, piece) {
     const validMoves = [];
     const legalMoves = piece.getLegalMoves(fromRow, fromCol, this.#board);
-    //console.log(legalMoves);
 
-    legalMoves.forEach(({row, col}) => {
+    legalMoves.forEach(({ row, col }) => {
       const tempBoard = this.#board.clone();
       tempBoard.movePiece(fromRow, fromCol, row, col);
       const kingPos = tempBoard.getKingPosition(this.#currentTurn);
@@ -270,71 +272,85 @@ export class Game {
       }
     });
 
-    //add an passant for the pawn
     if (piece instanceof Pawn && this.#lastMove) {
-      var lastMovePiece = this.#lastMove.actions[0].piece;
-      if ( lastMovePiece instanceof Pawn && lastMovePiece.getColor() !== piece.getColor() ) {
-        
-        var lastMoveFromRow = this.#lastMove.actions[0].move.from.row;
-        var lastMoveToRow = this.#lastMove.actions[0].move.to.row;
-        var lastMoveToCol = this.#lastMove.actions[0].move.to.col;
-        if (
-          Math.abs(lastMoveFromRow - lastMoveToRow) === 2 && lastMoveToRow === fromRow &&
-          Math.abs(lastMoveToCol - fromCol) === 1 && piece.getColor() === this.#currentTurn ) {
-
-          if (piece.getColor() === "w") {
-            validMoves.push([fromRow - 1, lastMoveToCol]);
-          } else {
-            validMoves.push([fromRow + 1, lastMoveToCol]);
-          }
-
-          this.#enPassant = { row: fromRow, col: fromCol };
-        }
-      }
+      this.calcEnPassant(validMoves, fromRow, fromCol, piece);
     }
 
-    //add castling
     if (piece instanceof King) {
-      const row = piece.getColor() === "w" ? 7 : 0;
-      if (
-        !piece._hasMoved &&
-        !this.#board.getSquare(row, 5).isOccupied() &&
-        !this.#board.getSquare(row, 6).isOccupied() &&
-        !this.#board.getThreatenedSquares(this.getCurrentTurn()).some((sq) => sq[0] === row && (sq[1] === 4 || sq[1] === 5 || sq[1] === 6))
-      ) {
-
-        if (
-          this.#board.getSquare(row, 7).isOccupied() &&
-          this.#board.getSquare(row, 7).getPiece() instanceof Rook &&
-          !this.#board.getSquare(row, 7).getPiece()._hasMoved
-        ) {
-          this.#castling[this.#currentTurn].kingside = true;
-          validMoves.push([row, 6]); // Kingside castling
-        }
-      }
-      if (
-        !piece._hasMoved &&
-        !this.#board.getSquare(row, 1).isOccupied() &&
-        !this.#board.getSquare(row, 2).isOccupied() &&
-        !this.#board.getSquare(row, 3).isOccupied() &&
-        !this.#board.getThreatenedSquares(this.getCurrentTurn()).some((sq) => sq[0] === row && (sq[1] === 1 || sq[1] === 2 || sq[1] === 3 || sq[1] === 4))
-      ) {
-        if (
-          this.#board.getSquare(row, 0).isOccupied() &&
-          this.#board.getSquare(row, 0).getPiece() instanceof Rook &&
-          !this.#board.getSquare(row, 0).getPiece()._hasMoved
-        ) {
-          this.#castling[this.#currentTurn].queenside = true;
-          validMoves.push([row, 2]); // Queenside castling
-        }
-      }
+      this.calcCastling(validMoves, fromRow, fromCol, piece);
     }
-    //console.log("valid moves: ", validMoves);
+
     return validMoves;
   }
   //===========================================
 
+  calcEnPassant(validMoves, fromRow, fromCol, piece) {
+    //add an passant for the pawn
+    var lastMovePiece = this.#lastMove.actions[0].piece;
+    if (lastMovePiece instanceof Pawn && lastMovePiece.getColor() !== piece.getColor()) {
+
+      var lastMoveFromRow = this.#lastMove.actions[0].move.from.row;
+      var lastMoveToRow = this.#lastMove.actions[0].move.to.row;
+      var lastMoveToCol = this.#lastMove.actions[0].move.to.col;
+      if (
+        Math.abs(lastMoveFromRow - lastMoveToRow) === 2 && lastMoveToRow === fromRow &&
+        Math.abs(lastMoveToCol - fromCol) === 1 && piece.getColor() === this.#currentTurn) {
+
+        if (piece.getColor() === "w") {
+          validMoves.push(new Position(fromRow - 1, lastMoveToCol));
+        } else {
+          validMoves.push(new Position(fromRow + 1, lastMoveToCol));
+        }
+
+        this.#enPassant = { row: fromRow, col: fromCol };
+      }
+    }
+
+  }
+  //===========================================
+
+  calcCastling(validMoves, fromRow, fromCol, piece) {
+    //add castling
+    const row = piece.getColor() === "w" ? 7 : 0;
+    if (
+      !piece._hasMoved &&
+      !this.#board.getSquare(row, 5).isOccupied() &&
+      !this.#board.getSquare(row, 6).isOccupied() &&
+      !this.#board.getThreatenedSquares(this.getCurrentTurn()).some((sq) => sq[0] === row && (sq[1] === 4 || sq[1] === 5 || sq[1] === 6))
+    ) {
+
+      if (
+        this.#board.getSquare(row, 7).isOccupied() &&
+        this.#board.getSquare(row, 7).getPiece() instanceof Rook &&
+        !this.#board.getSquare(row, 7).getPiece()._hasMoved
+      ) {
+        this.#castling[this.#currentTurn].kingside = true;
+        validMoves.push(new Position(row, 6)); // Kingside castling
+      }
+    }
+    if (
+      !piece._hasMoved &&
+      !this.#board.getSquare(row, 1).isOccupied() &&
+      !this.#board.getSquare(row, 2).isOccupied() &&
+      !this.#board.getSquare(row, 3).isOccupied() &&
+      !this.#board.getThreatenedSquares(this.getCurrentTurn()).some((sq) => sq[0] === row && (sq[1] === 1 || sq[1] === 2 || sq[1] === 3 || sq[1] === 4))
+    ) {
+      if (
+        this.#board.getSquare(row, 0).isOccupied() &&
+        this.#board.getSquare(row, 0).getPiece() instanceof Rook &&
+        !this.#board.getSquare(row, 0).getPiece()._hasMoved
+      ) {
+        this.#castling[this.#currentTurn].queenside = true;
+        validMoves.push(new Position(row, 2)); // Queenside castling
+      }
+    }
+  }
+
+  //===========================================
+
   promotePawnIfNeeded(row, col, piece) {
+    console.log(piece);
+
     if (
       (piece.getColor() === "w" && row === 0) ||
       (piece.getColor() === "b" && row === 7)
@@ -439,7 +455,7 @@ export class Game {
     newGame.#board = this.#board.clone();
     newGame.#moveHistory = [...this.#moveHistory];
     newGame.#currentTurn = this.#currentTurn;
-   // newGame.#enemyColor = this.#enemyColor;
+    // newGame.#enemyColor = this.#enemyColor;
     newGame.#gameOver = this.#gameOver;
     newGame.#winner = this.#winner;
     newGame.#draw = this.#draw;
