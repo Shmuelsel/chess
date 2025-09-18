@@ -1,5 +1,6 @@
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useReducer } from "react";
 import { Game } from "../logic/Game";
+import { gameReducer, initialState } from "../logic/gameReducer";
 import Board from "./Board";
 import "./Game.css";
 import ChessBoardLabels from "./ChessBoardWithLabels";
@@ -12,6 +13,7 @@ export const useTurn = () => {
 
 const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) => {
 
+    const [state, dispatch] = useReducer(gameReducer, initialState);
     const [game, setGame] = React.useState(new Game(playerColor));
     const [selectedSquare, setSelectedSquare] = React.useState(null);
     const [selectedPiece, setSelectedPiece] = React.useState(null);
@@ -95,8 +97,6 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) =>
             }
         }, 100);
         if (firstRender.current) {
-            console.log("First render");
-
             firstRender.current = false;
             return;
         }
@@ -166,15 +166,18 @@ const GameComponent = ({ onBack, timeLimit, playerMode, playerColor, level }) =>
     };
 
     const undoMove = () => {
-        game.undoMove();
-        setGame(game);
-        setSelectedPiece(null);
-        setSelectedSquare(null);
-        setValidMoves([]);
-        setThreatenedSquares(game.getBoard().getThreatenedSquares(enemyColor));
-        setTurn(game.getCurrentTurn());
-        setLastMove(game.getLastMove());
         redoMoves.current.push(moves.current.pop());
+        game.undoMove();
+        dispatch({ type: "UNDO" });
+        // game.undoMove();
+        // setGame(game);
+        // setSelectedPiece(null);
+        // setSelectedSquare(null);
+        // setValidMoves([]);
+        // setThreatenedSquares(game.getBoard().getThreatenedSquares(enemyColor));
+        // setTurn(game.getCurrentTurn());
+        // setLastMove(game.getLastMove());
+        // redoMoves.current.push(moves.current.pop());
     };
 
     const redoMove = () => {
