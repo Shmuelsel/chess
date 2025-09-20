@@ -25,7 +25,7 @@ export class Game {
 
   constructor(
     playerColor = "w",
-    gameMode = { type: "pve", aiLevel: "medium" },
+    gameMode = { type: "pve", aiLevel: "medium" }
   ) {
     this.#currentTurn = "w";
     this.#board = new Board(playerColor);
@@ -33,7 +33,6 @@ export class Game {
     this.#moveHistory = [];
     this.#forwardMove = [];
     this.#lastMove = null;
-
   }
   //===========================================
 
@@ -132,10 +131,7 @@ export class Game {
     const piece = this.#board.getPiece(fromRow, fromCol);
 
     if (!piece || piece.getColor() !== this.#currentTurn) {
-      console.error(
-        "Invalid move: No piece at the source square or not your turn."
-      );
-      return;
+      return false;
     }
     var capturePiece = this.#board.getPiece(toRow, toCol)
       ? this.#board.getPiece(toRow, toCol)
@@ -152,11 +148,14 @@ export class Game {
             from: { row: fromRow, col: fromCol },
             to: { row: toRow, col: toCol },
           },
-          moveChessNotation: this.posToChessNotation(fromRow, fromCol) + this.posToChessNotation(toRow, toCol),
+          moveChessNotation:
+            this.posToChessNotation(fromRow, fromCol) +
+            this.posToChessNotation(toRow, toCol),
         },
       ],
       capture: capturePiece,
       special: null,
+      turn: this.#currentTurn,
     };
 
     if (piece instanceof Pawn) {
@@ -171,12 +170,15 @@ export class Game {
     piece.incrementNumMoves();
     this.addMoveToHistory(this.#lastMove);
     this.#forwardMove = [];
+    return true;
   }
   //===========================================
   movePieceAnPassant(fromRow, fromCol, toRow, toCol, piece) {
     //const piece = this.#board.getPiece(fromRow, fromCol);
 
-    var capturePiece = this.#board.getPiece(toRow, toCol) ? this.#board.getPiece(toRow, toCol) : null;
+    var capturePiece = this.#board.getPiece(toRow, toCol)
+      ? this.#board.getPiece(toRow, toCol)
+      : null;
 
     this.promotePawnIfNeeded(toRow, toCol, piece);
 
@@ -186,7 +188,6 @@ export class Game {
       this.#enPassant.col === fromCol &&
       this.#enPassant.col !== toCol
     ) {
-
       capturePiece = this.#board.getPiece(this.#enPassant.row, toCol);
       this.#lastMove.capture = capturePiece;
       console.log("En passant captured:", capturePiece);
@@ -287,15 +288,19 @@ export class Game {
   calcEnPassant(validMoves, fromRow, fromCol, piece) {
     //add an passant for the pawn
     var lastMovePiece = this.#lastMove.actions[0].piece;
-    if (lastMovePiece instanceof Pawn && lastMovePiece.getColor() !== piece.getColor()) {
-
+    if (
+      lastMovePiece instanceof Pawn &&
+      lastMovePiece.getColor() !== piece.getColor()
+    ) {
       var lastMoveFromRow = this.#lastMove.actions[0].move.from.row;
       var lastMoveToRow = this.#lastMove.actions[0].move.to.row;
       var lastMoveToCol = this.#lastMove.actions[0].move.to.col;
       if (
-        Math.abs(lastMoveFromRow - lastMoveToRow) === 2 && lastMoveToRow === fromRow &&
-        Math.abs(lastMoveToCol - fromCol) === 1 && piece.getColor() === this.#currentTurn) {
-
+        Math.abs(lastMoveFromRow - lastMoveToRow) === 2 &&
+        lastMoveToRow === fromRow &&
+        Math.abs(lastMoveToCol - fromCol) === 1 &&
+        piece.getColor() === this.#currentTurn
+      ) {
         if (piece.getColor() === "w") {
           validMoves.push(new Position(fromRow - 1, lastMoveToCol));
         } else {
@@ -305,7 +310,6 @@ export class Game {
         this.#enPassant = { row: fromRow, col: fromCol };
       }
     }
-
   }
   //===========================================
 
@@ -316,9 +320,12 @@ export class Game {
       !piece._hasMoved &&
       !this.#board.getSquare(row, 5).isOccupied() &&
       !this.#board.getSquare(row, 6).isOccupied() &&
-      !this.#board.getThreatenedSquares(this.getCurrentTurn()).some((sq) => sq[0] === row && (sq[1] === 4 || sq[1] === 5 || sq[1] === 6))
+      !this.#board
+        .getThreatenedSquares(this.getCurrentTurn())
+        .some(
+          (sq) => sq[0] === row && (sq[1] === 4 || sq[1] === 5 || sq[1] === 6)
+        )
     ) {
-
       if (
         this.#board.getSquare(row, 7).isOccupied() &&
         this.#board.getSquare(row, 7).getPiece() instanceof Rook &&
@@ -333,7 +340,13 @@ export class Game {
       !this.#board.getSquare(row, 1).isOccupied() &&
       !this.#board.getSquare(row, 2).isOccupied() &&
       !this.#board.getSquare(row, 3).isOccupied() &&
-      !this.#board.getThreatenedSquares(this.getCurrentTurn()).some((sq) => sq[0] === row && (sq[1] === 1 || sq[1] === 2 || sq[1] === 3 || sq[1] === 4))
+      !this.#board
+        .getThreatenedSquares(this.getCurrentTurn())
+        .some(
+          (sq) =>
+            sq[0] === row &&
+            (sq[1] === 1 || sq[1] === 2 || sq[1] === 3 || sq[1] === 4)
+        )
     ) {
       if (
         this.#board.getSquare(row, 0).isOccupied() &&
@@ -464,9 +477,9 @@ export class Game {
     newGame.#check = { ...this.#check };
     newGame.#lastMove = this.#lastMove
       ? {
-        from: { ...this.#lastMove.actions.move.from },
-        to: { ...this.#lastMove.actions.move.to },
-      }
+          from: { ...this.#lastMove.actions.move.from },
+          to: { ...this.#lastMove.actions.move.to },
+        }
       : null;
     return newGame;
   }
