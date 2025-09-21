@@ -6,12 +6,14 @@ export class Piece {
     _color;
     _hasMoved;
     _numMoves;
+    _needPromotion;
 
     constructor(color, type) {
         this._type = type;
         this._color = color;
         this._hasMoved = false;
         this._numMoves = 0;
+        this._needPromotion = false;
     }
 
     getLegalMoves(row, col, board){

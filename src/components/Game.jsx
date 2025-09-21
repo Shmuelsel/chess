@@ -4,6 +4,7 @@ import { gameReducer, getInitialState } from "../logic/gameReducer";
 import Board from "./Board";
 import "./Game.css";
 import ChessBoardLabels from "./ChessBoardWithLabels";
+import PawnPromotion from "./PawnPromotion";
 
 export const TurnContext = createContext();
 export const useTurn = () => {
@@ -37,6 +38,7 @@ const GameComponent = ({
     const [blackClock, setBlackClock] = React.useState(timeLimit.value);
     const [trigger, setTrigger] = React.useState(false);
     const [assistantMove, setAssistantMove] = React.useState(null);
+    const [popupPiecePromotion, setPopupPiecePromotion] = React.useState(null);
 
     const moves = React.useRef([]);
     const redoMoves = React.useRef([]);
@@ -139,6 +141,7 @@ const GameComponent = ({
         if (playerModeRef.current === "pve" && turn !== playerColorRef.current) {
             return;
         }
+        handlePieceSelection(row, col);
 
         if (selectedPiece) {
             const isValid = validMoves.some(
@@ -154,10 +157,21 @@ const GameComponent = ({
                         toCol: col,
                     },
                 });
-            }
+                console.log(row, col);
+                console.log("Promotion needed for:", game.getBoard().getSquare(row, col).getPiece());
+
+                if(game.getBoard().getSquare(row, col).getPiece()._needPromotion){
+                    setPopupPiecePromotion(game.getBoard().getSquare(row, col).getPiece());
+                }
+            } 
+            handlePieceSelection(row, col);
             return;
         }
+        
+        
+    };
 
+    const handlePieceSelection = (row, col) => {
         if (
             game.getBoard().getSquare(row, col).isOccupied() &&
             game.getBoard().getSquare(row, col).getPiece().getColor() ===
@@ -182,7 +196,7 @@ const GameComponent = ({
                 },
             });
         }
-    };
+    }
 
     const undoMove = () => {
         redoMoves.current.push(moves.current.pop());
@@ -240,6 +254,8 @@ const GameComponent = ({
             }
         }, 100);
     };
+
+    const onPromotion = (newPiece) => {}
 
     const handleTip = () => {
         const parts = stockFishInfo.current.split(" ");
@@ -318,6 +334,12 @@ const GameComponent = ({
                     threatenedSq={threatenedSquares}
                     lastMove={lastMove}
                 />
+                {popupPiecePromotion && (
+                    <PawnPromotion
+                        piece={popupPiecePromotion}
+                        onPromote={onPromotion}
+                    />
+                )}
                 <button className="button rstBtn" onClick={resetGame}>
                     new game
                 </button>

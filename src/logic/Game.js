@@ -368,8 +368,9 @@ export class Game {
       (piece.getColor() === "w" && row === 0) ||
       (piece.getColor() === "b" && row === 7)
     ) {
-      const promotedPiece = new Queen(piece.getColor(), "q"); // Default to Queen promotion
-      this.#board.setPiece(row, col, promotedPiece);
+      // const promotedPiece = new Queen(piece.getColor(), "q"); // Default to Queen promotion
+      // this.#board.setPiece(row, col, promotedPiece);
+      piece._needPromotion = true;
     }
   }
   //===========================================
