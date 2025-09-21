@@ -1,4 +1,3 @@
-import { PieceColor, PieceType } from "../logic/pieceConstants";
 import React from "react";
 import { PieceImages } from "../logic/pieceConstants";
 import "./Piece.css";

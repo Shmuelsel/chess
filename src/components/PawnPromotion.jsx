@@ -21,7 +21,7 @@ const PawnPromotion = ({ piece, onPromote }) => {
             onClick={() => onPromote(piece, opt.type)}
           >
             <img
-              src={PieceImages[opt.label + piece.getColor()]}
+              src={PieceImages[opt.label + color]}
               alt=""
               className="promotion-img"
             />

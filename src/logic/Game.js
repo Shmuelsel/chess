@@ -1,7 +1,6 @@
 import { Board } from "./Board.js";
 import { Pawn } from "./pieces/Pawn.js";
 import { King } from "./pieces/King.js";
-import { Queen } from "./pieces/Queen.js";
 import { Rook } from "./pieces/Rook.js";
 import { Position } from "./Position.js";
 
