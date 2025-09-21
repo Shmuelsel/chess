@@ -4,7 +4,6 @@ export function gameReducer(state, action) {
     switch (action.type) {
         case "MOVE": {
             const { fromRow, fromCol, toRow, toCol } = action.payload;
-            // צור עותק חדש של המשחק
             const newGame = state.game.clone();
             const moveResult = newGame.movePiece(fromRow, fromCol, toRow, toCol);
 

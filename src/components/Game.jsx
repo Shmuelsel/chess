@@ -64,18 +64,13 @@ const GameComponent = ({
 
     React.useEffect(() => {
         if (!lastMove) return;
-        // כאן ה-state כבר מעודכן!
-        console.log("Last Move:", lastMove);
         const { row, col } = lastMove.actions[0].move.to;
-        console.log(row, col);
-        console.log(lastMove.actions[0].move.to);
-
         const piece = game.getBoard().getSquare(row, col).getPiece();
-        // כאן תוכל לבדוק אם צריך קידום, או כל פעולה אחרת
         if (piece && piece._needPromotion) {
             setPopupPiecePromotion(piece);
         }
     }, [lastMove]);
+    //===========================================
 
     React.useEffect(() => {
         if (playerMode !== "pve") return;
@@ -123,6 +118,7 @@ const GameComponent = ({
         };
         return () => engine.terminate();
     }, [trigger]);
+    //===========================================
 
     React.useEffect(() => {
         updateTimers();
@@ -157,6 +153,17 @@ const GameComponent = ({
             }
         }
     }, [turn]);
+    //===========================================
+
+    // Cleanup timer on unmount
+    React.useEffect(() => {
+        return () => {
+            if (timerRef.current) {
+                clearInterval(timerRef.current);
+            }
+        };
+    }, []);
+    //===========================================
 
     const handleSquareSelection = (row, col) => {
         // במשחק נגד המחשב, השחקן יכול לשחק רק בצבע שלו
@@ -194,6 +201,7 @@ const GameComponent = ({
 
 
     };
+    //===========================================
 
     const handlePieceSelection = (row, col) => {
         if (
@@ -306,14 +314,7 @@ const GameComponent = ({
         }
     };
 
-    // Cleanup timer on unmount
-    React.useEffect(() => {
-        return () => {
-            if (timerRef.current) {
-                clearInterval(timerRef.current);
-            }
-        };
-    }, []);
+    
 
     return (
         <TurnContext.Provider value={{ turn, dispatch, lastMove }}>
