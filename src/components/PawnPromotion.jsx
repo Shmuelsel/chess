@@ -1,5 +1,6 @@
 import React from 'react'
 import { PieceImages } from '../logic/pieceConstants'
+import './PawnPromotion.css'
 
 const PawnPromotion = ({ piece, onPromote }) => {
   const color = piece.getColor();
@@ -17,14 +18,14 @@ const PawnPromotion = ({ piece, onPromote }) => {
           <li
             key={opt.type}
             className="promotion-option"
-            onClick={() => onPromote(opt.type)}
+            onClick={() => onPromote(piece, opt.type)}
           >
             <img
-              src={PieceImages[`${color}${opt.type[0].toUpperCase()}`]}
-              alt={opt.label}
+              src={PieceImages[opt.label + piece.getColor()]}
+              alt=""
               className="promotion-img"
             />
-            <span>{opt.label}</span>
+            {/* <span>{opt.label}</span> */}
           </li>
         ))}
       </ul>

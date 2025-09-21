@@ -478,8 +478,8 @@ export class Game {
     newGame.#check = { ...this.#check };
     newGame.#lastMove = this.#lastMove
       ? {
-          from: { ...this.#lastMove.actions.move.from },
-          to: { ...this.#lastMove.actions.move.to },
+          from: { ...this.#lastMove.actions[0].move.from },
+          to: { ...this.#lastMove.actions[0].move.to },
         }
       : null;
     return newGame;

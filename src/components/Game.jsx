@@ -5,6 +5,11 @@ import Board from "./Board";
 import "./Game.css";
 import ChessBoardLabels from "./ChessBoardWithLabels";
 import PawnPromotion from "./PawnPromotion";
+import { Queen } from "../logic/pieces/Queen";
+import { Rook } from "../logic/pieces/Rook";
+import { Bishop } from "../logic/pieces/Bishop";
+import { Knight } from "../logic/pieces/Knight";
+
 
 export const TurnContext = createContext();
 export const useTurn = () => {
@@ -26,6 +31,7 @@ const GameComponent = ({
     // Extract from state
     const {
         game,
+        //board,
         selectedSquare,
         selectedPiece,
         validMoves,
@@ -34,6 +40,7 @@ const GameComponent = ({
         lastMove,
         updateCounter,
     } = state;
+
     const [whiteClock, setWhiteClock] = React.useState(timeLimit.value);
     const [blackClock, setBlackClock] = React.useState(timeLimit.value);
     const [trigger, setTrigger] = React.useState(false);
@@ -54,6 +61,21 @@ const GameComponent = ({
     const stockFishInfo = React.useRef(null);
 
     const enemyColor = playerColor === "w" ? "b" : "w";
+
+    React.useEffect(() => {
+        if (!lastMove) return;
+        // כאן ה-state כבר מעודכן!
+        console.log("Last Move:", lastMove);
+        const { row, col } = lastMove.actions[0].move.to;
+        console.log(row, col);
+        console.log(lastMove.actions[0].move.to);
+
+        const piece = game.getBoard().getSquare(row, col).getPiece();
+        // כאן תוכל לבדוק אם צריך קידום, או כל פעולה אחרת
+        if (piece && piece._needPromotion) {
+            setPopupPiecePromotion(piece);
+        }
+    }, [lastMove]);
 
     React.useEffect(() => {
         if (playerMode !== "pve") return;
@@ -157,18 +179,20 @@ const GameComponent = ({
                         toCol: col,
                     },
                 });
-                console.log(row, col);
-                console.log("Promotion needed for:", game.getBoard().getSquare(row, col).getPiece());
+                // console.log(state.game.getBoard());
 
-                if(game.getBoard().getSquare(row, col).getPiece()._needPromotion){
-                    setPopupPiecePromotion(game.getBoard().getSquare(row, col).getPiece());
-                }
-            } 
+                // console.log(row, col);
+                // console.log("Promotion needed for:", game.getBoard().getSquare(row, col).getPiece());
+
+                // if (game.getBoard().getSquare(row, col).getPiece()._needPromotion) {
+                //     setPopupPiecePromotion(game.getBoard().getSquare(row, col).getPiece());
+                // }
+            }
             handlePieceSelection(row, col);
             return;
         }
-        
-        
+
+
     };
 
     const handlePieceSelection = (row, col) => {
@@ -255,7 +279,22 @@ const GameComponent = ({
         }, 100);
     };
 
-    const onPromotion = (newPiece) => {}
+    const onPromotion = (pawn, newPiece) => {
+        const pieceMap = {
+            Queen,
+            Rook,
+            Bishop,
+            Knight,
+        };
+
+        const PieceClass = pieceMap[newPiece];
+        if (PieceClass) {
+            const promoted = new PieceClass(pawn.getColor());
+            game.getBoard().setPiece(game.getLastMove().actions[0].move.to.row, game.getLastMove().actions[0].move.to.col, promoted);
+            setPopupPiecePromotion(null);
+
+        }
+    };
 
     const handleTip = () => {
         const parts = stockFishInfo.current.split(" ");

@@ -1,63 +1,69 @@
 import { Game } from "./Game";
 
 export function gameReducer(state, action) {
-    const { game } = state;
     switch (action.type) {
-        case "MOVE":
+        case "MOVE": {
             const { fromRow, fromCol, toRow, toCol } = action.payload;
-            const moveResult = game.movePiece(fromRow, fromCol, toRow, toCol);
+            // צור עותק חדש של המשחק
+            const newGame = state.game.clone();
+            const moveResult = newGame.movePiece(fromRow, fromCol, toRow, toCol);
 
             if (moveResult) {
-                game.switchTurn();
+                newGame.switchTurn();
             }
 
             return {
                 ...state,
-                game,
-                turn: game.getCurrentTurn(),
+                game: newGame,
+                turn: newGame.getCurrentTurn(),
                 selectedPiece: null,
                 selectedSquare: null,
                 validMoves: [],
-                lastMove: game.getLastMove(),
-                threatenedSquares: game
+                lastMove: newGame.getLastMove(),
+                threatenedSquares: newGame
                     .getBoard()
-                    .getThreatenedSquares(game.getCurrentTurn()),
+                    .getThreatenedSquares(newGame.getCurrentTurn()),
                 updateCounter: state.updateCounter + 1,
             };
+        }
 
-        case "UNDO":
-            game.undoMove();
+        case "UNDO": {
+            const newGame = state.game.clone();
+            newGame.undoMove();
             return {
                 ...state,
-                game,
+                game: newGame,
                 selectedPiece: null,
                 selectedSquare: null,
                 validMoves: [],
-                threatenedSquares: game
+                threatenedSquares: newGame
                     .getBoard()
-                    .getThreatenedSquares(game.getCurrentTurn()),
-                turn: game.getCurrentTurn(),
-                lastMove: game.getLastMove(),
+                    .getThreatenedSquares(newGame.getCurrentTurn()),
+                turn: newGame.getCurrentTurn(),
+                lastMove: newGame.getLastMove(),
                 updateCounter: state.updateCounter + 1,
             };
+        }
 
-        case "REDO":
-            game.redoMove();
+        case "REDO": {
+            const newGame = state.game.clone();
+            newGame.redoMove();
             return {
                 ...state,
-                game,
+                game: newGame,
                 selectedPiece: null,
                 selectedSquare: null,
                 validMoves: [],
-                threatenedSquares: game
+                threatenedSquares: newGame
                     .getBoard()
-                    .getThreatenedSquares(game.getCurrentTurn()),
-                lastMove: game.getLastMove(),
-                turn: game.getCurrentTurn(),
+                    .getThreatenedSquares(newGame.getCurrentTurn()),
+                lastMove: newGame.getLastMove(),
+                turn: newGame.getCurrentTurn(),
                 updateCounter: state.updateCounter + 1,
             };
+        }
 
-        case "SELECT_PIECE":
+        case "SELECT_PIECE": {
             const { row, col, piece, moves } = action.payload;
             return {
                 ...state,
@@ -65,6 +71,7 @@ export function gameReducer(state, action) {
                 selectedPiece: piece,
                 validMoves: moves,
             };
+        }
 
         case "CLEAR_SELECTION":
             return {
@@ -91,4 +98,5 @@ export const getInitialState = (playerColor = "w") => ({
     threatenedSquares: [],
     lastMove: null,
     updateCounter: 0,
+    //board: new Game(playerColor).board,
 });
