@@ -3,6 +3,7 @@ import { Pawn } from "./pieces/Pawn.js";
 import { King } from "./pieces/King.js";
 import { Rook } from "./pieces/Rook.js";
 import { Position } from "./Position.js";
+import { Move } from "./Move.js";
 
 export class Game {
   #board;
@@ -101,18 +102,18 @@ export class Game {
     const kingPos = this.#board.getKingPosition(color);
     const check = this.#board
       .getThreatenedSquares(color)
-      .some((sq) => sq[0] === kingPos.y && sq[1] === kingPos.x);
+      .some((sq) => sq.row === kingPos.y && sq.col === kingPos.x);
     this.#check[color] = check;
     return check;
   }
   //===========================================
 
-  getLegalMoves(row, col) {
-    const piece = this.#board.getPiece(row, col);
+  getLegalMoves(pos) {
+    const piece = this.#board.getPiece(pos);
     if (!piece || piece.getColor() !== this.#currentTurn) {
       return [];
     }
-    return piece.getLegalMoves(row, col, this.#board);
+    return piece.getLegalMoves(pos.row, pos.col, this.#board);
   }
   //===========================================
 
@@ -126,43 +127,38 @@ export class Game {
   }
   //===========================================
 
-  movePiece(fromRow, fromCol, toRow, toCol) {
-    const piece = this.#board.getPiece(fromRow, fromCol);
+  movePiece(move) {
+    console.log("movePiece called with:", move);
+
+    if (!move || !move.from || !move.to) {
+      console.error("Invalid move object:", move);
+      return false;
+    }
+
+    const from = move.from;
+    const to = move.to;
+
+    const piece = this.#board.getPiece(move.from);
 
     if (!piece || piece.getColor() !== this.#currentTurn) {
       return false;
     }
-    var capturePiece = this.#board.getPiece(toRow, toCol)
-      ? this.#board.getPiece(toRow, toCol)
-      : null;
 
-    this.#board.setPiece(toRow, toCol, piece);
-    this.#board.setPiece(fromRow, fromCol, null);
+    // עדכן את הכלי שנתפס במהלך
+    const capturedPiece = this.#board.getPiece(move.to);
+    move.capturedPiece = capturedPiece;
 
-    this.#lastMove = {
-      actions: [
-        {
-          piece: piece,
-          move: {
-            from: { row: fromRow, col: fromCol },
-            to: { row: toRow, col: toCol },
-          },
-          moveChessNotation:
-            this.posToChessNotation(fromRow, fromCol) +
-            this.posToChessNotation(toRow, toCol),
-        },
-      ],
-      capture: capturePiece,
-      special: null,
-      turn: this.#currentTurn,
-    };
+    this.#board.setPiece(to, piece);
+    this.#board.setPiece(from, null);
+
+    this.#lastMove = move;
 
     if (piece instanceof Pawn) {
-      this.movePieceAnPassant(fromRow, fromCol, toRow, toCol, piece);
+      this.movePieceAnPassant(move, piece);
     }
 
     if (piece instanceof King) {
-      this.movePieceCastling(fromRow, fromCol, toRow, toCol, piece);
+      this.movePieceCastling(move);
     }
 
     piece._hasMoved = true;
@@ -172,69 +168,82 @@ export class Game {
     return true;
   }
   //===========================================
-  movePieceAnPassant(fromRow, fromCol, toRow, toCol, piece) {
+  movePieceAnPassant(move, piece) {
+    const from = move.from;
+    const to = move.to;
+
     //const piece = this.#board.getPiece(fromRow, fromCol);
 
-    var capturePiece = this.#board.getPiece(toRow, toCol)
-      ? this.#board.getPiece(toRow, toCol)
+    var capturePiece = this.#board.getPiece(to)
+      ? this.#board.getPiece(to)
       : null;
 
-    this.promotePawnIfNeeded(toRow, toCol, piece);
+    this.promotePawnIfNeeded(to.row, to.col, piece);
 
     if (
       this.#enPassant &&
-      this.#enPassant.row === fromRow &&
-      this.#enPassant.col === fromCol &&
-      this.#enPassant.col !== toCol
+      this.#enPassant.row === from.row &&
+      this.#enPassant.col === from.col &&
+      this.#enPassant.col !== to.col
     ) {
-      capturePiece = this.#board.getPiece(this.#enPassant.row, toCol);
+      capturePiece = this.#board.getPiece(
+        new Position(this.#enPassant.row, to.col)
+      );
       this.#lastMove.capture = capturePiece;
+      move.capturedPiece = capturePiece;
+      move.isEnPassant = true;
+
       console.log("En passant captured:", capturePiece);
 
       this.#lastMove.special = "en passant";
-      this.#board.setPiece(this.#enPassant.row, toCol, null);
+      this.#board.setPiece(new Position(this.#enPassant.row, to.col), null);
       console.log("En passant captured:", this.#enPassant);
     }
   }
   //===========================================
 
-  movePieceCastling(fromRow, fromCol, toRow, toCol, piece) {
-    if (fromCol - toCol === 2) {
+  movePieceCastling(move) {
+    const from = move.from;
+    const to = move.to;
+
+    if (from.col - to.col === 2) {
       // Castling move
       const rookCol = 0; // Determine rook's column
-      const rook = this.#board.getPiece(fromRow, rookCol);
+      const rook = this.#board.getPiece(from.row, rookCol);
       if (rook && rook instanceof Rook && !rook._hasMoved) {
-        this.#board.setPiece(fromRow, toCol + 1, rook);
+        this.#board.setPiece(new Position(from.row, to.col + 1), rook);
         this.#lastMove.special = "queenside castling";
+        move.isCastling.queenside = true;
         this.#lastMove.actions.push({
           piece: rook,
           move: {
-            from: { row: fromRow, col: rookCol },
-            to: { row: fromRow, col: toCol + 1 },
+            from: { row: from.row, col: rookCol },
+            to: { row: from.row, col: to.col + 1 },
           },
         });
         rook.incrementNumMoves();
-        this.#board.setPiece(fromRow, rookCol, null);
+        this.#board.setPiece(new Position(from.row, rookCol), null);
       }
-    } else if (toCol - fromCol === 2) {
+    } else if (to.col - from.col === 2) {
       // Castling move
       const rookCol = 7; // Determine rook's column
-      const rook = this.#board.getPiece(fromRow, rookCol);
+      const rook = this.#board.getPiece(from.row, rookCol);
       if (rook && rook instanceof Rook && !rook._hasMoved) {
-        this.#board.setPiece(fromRow, toCol - 1, rook);
+        this.#board.setPiece(new Position(from.row, to.col - 1), rook);
         this.#lastMove.special = "kingside castling";
+        move.isCastling.kingside = true;
         this.#lastMove.actions.push({
           piece: rook,
           move: {
-            from: { row: fromRow, col: rookCol },
-            to: { row: fromRow, col: toCol - 1 },
+            from: { row: from.row, col: rookCol },
+            to: { row: from.row, col: to.col - 1 },
           },
         });
         rook.incrementNumMoves();
-        this.#board.setPiece(fromRow, rookCol, null);
+        this.#board.setPiece(new Position(from.row, rookCol), null);
       }
     }
-    this.updateKingPosition(toRow, toCol);
+    this.updateKingPosition(to.row, to.col);
   }
   //===========================================
 
@@ -255,13 +264,14 @@ export class Game {
   // takes all the moves of a piece and checks if they are legal
   // by checking if the move does not put the king in check
 
-  calcMoves(fromRow, fromCol, piece) {
+  calcMoves(pos, piece) {
     const validMoves = [];
-    const legalMoves = piece.getLegalMoves(fromRow, fromCol, this.#board);
+    const legalMoves = piece.getLegalMoves(pos, this.#board);
 
     legalMoves.forEach(({ row, col }) => {
+      const move = new Move(piece, pos, new Position(row, col));
       const tempBoard = this.#board.clone();
-      tempBoard.movePiece(fromRow, fromCol, row, col);
+      tempBoard.movePiece(move);
       const kingPos = tempBoard.getKingPosition(this.#currentTurn);
 
       const isInCheck = tempBoard
@@ -273,27 +283,29 @@ export class Game {
     });
 
     if (piece instanceof Pawn && this.#lastMove) {
-      this.calcEnPassant(validMoves, fromRow, fromCol, piece);
+      this.calcEnPassant(validMoves, pos, piece);
     }
 
     if (piece instanceof King) {
-      this.calcCastling(validMoves, fromRow, fromCol, piece);
+      this.calcCastling(validMoves, pos, piece);
     }
 
     return validMoves;
   }
   //===========================================
 
-  calcEnPassant(validMoves, fromRow, fromCol, piece) {
+  calcEnPassant(validMoves, pos, piece) {
     //add an passant for the pawn
-    var lastMovePiece = this.#lastMove.actions[0].piece;
+    const fromRow = pos.row;
+    const fromCol = pos.col;
+    var lastMovePiece = this.#lastMove.piece;
     if (
       lastMovePiece instanceof Pawn &&
       lastMovePiece.getColor() !== piece.getColor()
     ) {
-      var lastMoveFromRow = this.#lastMove.actions[0].move.from.row;
-      var lastMoveToRow = this.#lastMove.actions[0].move.to.row;
-      var lastMoveToCol = this.#lastMove.actions[0].move.to.col;
+      var lastMoveFromRow = this.#lastMove.from.row;
+      var lastMoveToRow = this.#lastMove.to.row;
+      var lastMoveToCol = this.#lastMove.to.col;
       if (
         Math.abs(lastMoveFromRow - lastMoveToRow) === 2 &&
         lastMoveToRow === fromRow &&
@@ -312,23 +324,29 @@ export class Game {
   }
   //===========================================
 
-  calcCastling(validMoves, fromRow, fromCol, piece) {
+  calcCastling(validMoves, pos, piece) {
     //add castling
+    const fromRow = pos.row;
+    const fromCol = pos.col;
     const row = piece.getColor() === "w" ? 7 : 0;
+    const posKingSide1 = new Position(row, 5);
+    const posKingSide2 = new Position(row, 6);
+    const posRookKingSide = new Position(row, 7);
     if (
       !piece._hasMoved &&
-      !this.#board.getSquare(row, 5).isOccupied() &&
-      !this.#board.getSquare(row, 6).isOccupied() &&
+      !this.#board.getSquare(posKingSide1).isOccupied() &&
+      !this.#board.getSquare(posKingSide2).isOccupied() &&
       !this.#board
         .getThreatenedSquares(this.getCurrentTurn())
         .some(
-          (sq) => sq[0] === row && (sq[1] === 4 || sq[1] === 5 || sq[1] === 6)
+          (sq) =>
+            sq.row === row && (sq.col === 4 || sq.col === 5 || sq.col === 6)
         )
     ) {
       if (
-        this.#board.getSquare(row, 7).isOccupied() &&
-        this.#board.getSquare(row, 7).getPiece() instanceof Rook &&
-        !this.#board.getSquare(row, 7).getPiece()._hasMoved
+        this.#board.getSquare(posRookKingSide).isOccupied() &&
+        this.#board.getSquare(posRookKingSide).getPiece() instanceof Rook &&
+        !this.#board.getSquare(posRookKingSide).getPiece()._hasMoved
       ) {
         this.#castling[this.#currentTurn].kingside = true;
         validMoves.push(new Position(row, 6)); // Kingside castling
@@ -336,21 +354,22 @@ export class Game {
     }
     if (
       !piece._hasMoved &&
-      !this.#board.getSquare(row, 1).isOccupied() &&
-      !this.#board.getSquare(row, 2).isOccupied() &&
-      !this.#board.getSquare(row, 3).isOccupied() &&
+      !this.#board.getSquare(new Position(row, 1)).isOccupied() &&
+      !this.#board.getSquare(new Position(row, 2)).isOccupied() &&
+      !this.#board.getSquare(new Position(row, 3)).isOccupied() &&
       !this.#board
         .getThreatenedSquares(this.getCurrentTurn())
         .some(
           (sq) =>
-            sq[0] === row &&
-            (sq[1] === 1 || sq[1] === 2 || sq[1] === 3 || sq[1] === 4)
+            sq.row === row &&
+            (sq.col === 1 || sq.col === 2 || sq.col === 3 || sq.col === 4)
         )
     ) {
       if (
-        this.#board.getSquare(row, 0).isOccupied() &&
-        this.#board.getSquare(row, 0).getPiece() instanceof Rook &&
-        !this.#board.getSquare(row, 0).getPiece()._hasMoved
+        this.#board.getSquare(new Position(row, 0)).isOccupied() &&
+        this.#board.getSquare(new Position(row, 0)).getPiece() instanceof
+          Rook &&
+        !this.#board.getSquare(new Position(row, 0)).getPiece()._hasMoved
       ) {
         this.#castling[this.#currentTurn].queenside = true;
         validMoves.push(new Position(row, 2)); // Queenside castling
@@ -380,11 +399,12 @@ export class Game {
       row.forEach((square, colIndex) => {
         const piece = square.getPiece();
         if (piece && piece.getColor() === color) {
-          const moves = this.calcMoves(rowIndex, colIndex, piece);
+          const pos = new Position(rowIndex, colIndex);
+          const moves = this.calcMoves(pos, piece);
           moves.forEach((move) => {
             legalMoves.push({
               from: { row: rowIndex, col: colIndex },
-              to: { row: move[0], col: move[1] },
+              to: { row: move.row, col: move.col },
             });
           });
         }
@@ -408,28 +428,33 @@ export class Game {
       this.#winner = null;
     }
     const lastMove = this.#moveHistory.pop();
-    lastMove.actions.forEach((action) => {
-      const from = action.move.from;
-      const to = action.move.to;
-      const piece = action.piece;
-      this.#board.setPiece(from.row, from.col, piece);
-      if (lastMove.capture) {
-        if (lastMove.special === "en passant") {
-          const direction = piece.getColor() === "w" ? 1 : -1;
-          this.#board.setPiece(to.row + direction, to.col, lastMove.capture);
-          this.#board.setPiece(to.row, to.col, null);
-        } else {
-          this.#board.setPiece(to.row, to.col, lastMove.capture);
-        }
-      } else {
-        this.#board.setPiece(to.row, to.col, null);
-      }
 
-      piece.decrementNumMoves();
-      if (piece.getNumMoves() === 0) {
-        piece.setHasMoved(false);
+    // הוזר את הכלי מהמיקום החדש למיקום הישן
+    const piece = lastMove.piece;
+    this.#board.setPiece(lastMove.from, piece);
+
+    // אם היה כלי שנתפס, החזר אותו למקום
+    if (lastMove.capturedPiece) {
+      if (lastMove.isEnPassant) {
+        const direction = piece.getColor() === "w" ? 1 : -1;
+        this.#board.setPiece(
+          new Position(lastMove.to.row + direction, lastMove.to.col),
+          lastMove.capturedPiece
+        );
+        this.#board.setPiece(lastMove.to, null);
+      } else {
+        this.#board.setPiece(lastMove.to, lastMove.capturedPiece);
       }
-    });
+    } else {
+      this.#board.setPiece(lastMove.to, null);
+    }
+
+    // עדכן את מצב הכלי
+    piece.decrementNumMoves();
+    if (piece.getNumMoves() === 0) {
+      piece.setHasMoved(false);
+    }
+
     this.#forwardMove.push(lastMove);
 
     this.#lastMove =
@@ -437,6 +462,9 @@ export class Game {
         ? this.#moveHistory[this.#moveHistory.length - 1]
         : null;
     this.switchTurn();
+    console.log(this.#lastMove);
+    console.log(this.#moveHistory);
+
   }
   //===========================================
 
@@ -445,16 +473,15 @@ export class Game {
       console.error("No moves to redo.");
       return;
     }
-    const lastForwardMove = this.#forwardMove.pop();
-    lastForwardMove.actions.forEach((action) => {
-      const from = action.move.from;
-      const to = action.move.to;
-      const piece = action.piece;
-      this.#board.setPiece(to.row, to.col, piece);
-      this.#board.setPiece(from.row, from.col, null);
-      piece.incrementNumMoves();
-    });
-    this.#moveHistory.push(lastForwardMove);
+    const moveToRedo = this.#forwardMove.pop();
+
+    // בצע את המהלך מחדש
+    const piece = moveToRedo.piece;
+    this.#board.setPiece(moveToRedo.to, piece);
+    this.#board.setPiece(moveToRedo.from, null);
+    piece.incrementNumMoves();
+
+    this.#moveHistory.push(moveToRedo);
     this.#lastMove =
       this.#moveHistory.length > 0
         ? this.#moveHistory[this.#moveHistory.length - 1]
@@ -477,8 +504,13 @@ export class Game {
     newGame.#check = { ...this.#check };
     newGame.#lastMove = this.#lastMove
       ? {
-          from: { ...this.#lastMove.actions[0].move.from },
-          to: { ...this.#lastMove.actions[0].move.to },
+          from: new Position(this.#lastMove.from.row, this.#lastMove.from.col),
+          to: new Position(this.#lastMove.to.row, this.#lastMove.to.col),
+          piece: this.#lastMove.piece,
+          capturedPiece: this.#lastMove.capturedPiece,
+          isEnPassant: this.#lastMove.isEnPassant,
+          isCastling: this.#lastMove.isCastling,
+          promotionType: this.#lastMove.promotionType,
         }
       : null;
     return newGame;
@@ -512,6 +544,6 @@ export class Game {
   chessNotationToPos(notation) {
     const file = notation.charCodeAt(0) - 97;
     const rank = 8 - parseInt(notation.charAt(1), 10);
-    return { row: rank, col: file };
+    return new Position(rank, file);
   }
 }

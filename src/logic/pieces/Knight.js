@@ -8,7 +8,9 @@ export class Knight extends Piece {
         super(color, PieceType.KNIGHT);
     }
 
-    getLegalMoves(row, col, board) {
+    getLegalMoves(pos, board) {
+        const row = pos.row;
+        const col = pos.col;
         const moves = [];
         const knightMoves = [
             [2, 1], [2, -1], [-2, 1], [-2, -1],
@@ -19,8 +21,8 @@ export class Knight extends Piece {
             const r = row + dx;
             const c = col + dy;
             if (r >= 0 && r < 8 && c >= 0 && c < 8) {
-                if (!board.getSquare(r, c).isOccupied() || 
-                    board.getSquare(r, c).getPiece().getColor() !== this._color) {
+                if (!board.getSquare(new Position(r, c)).isOccupied() || 
+                    board.getSquare(new Position(r, c)).getPiece().getColor() !== this._color) {
                 moves.push(new Position(r, c));
                 }
             }
@@ -28,8 +30,8 @@ export class Knight extends Piece {
         return moves;
     }
 
-    getThreatMoves(row, col, board) {
-        return this.getLegalMoves(row, col, board);
+    getThreatMoves(pos, board) {
+        return this.getLegalMoves(pos, board);
     }
 
     getValue() {

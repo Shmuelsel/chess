@@ -1,40 +1,31 @@
-export class Position{
-
-    // constructor(chessNotation) {
-    //     const letterToCol = (letter) => letter.charCodeAt(0) - 97;
-    //     const match = chessNotation.match(/^([a-h])([1-8])$/);
-    //     if (match) {
-    //         col = letterToCol(match[1]);
-    //         row = parseInt(match[2]) - 1;
-    //         this(row, col);
-    //     } else {
-    //         throw new Error('Invalid chess notation');
-    //     }
-    // }
-
-    // constructor(row, col) {
-    //     this.row = row;
-    //     this.col = col;
-    // }
-
-    constructor( row, col, notation ) {
-        if (notation) {
-            const letterToCol = (letter) => letter.charCodeAt(0) - 97;
-            this.row = parseInt(notation[1]) - 1;
-            this.col = letterToCol(notation[0]);
-        } else {
-            this.row = row;
-            this.col = col;
-        }
+export class Position {
+    row;
+    col;
+  constructor(row, col) {
+    if (typeof row === "string") {
+      // If the first parameter is a string, treat it as chess notation
+      const file = row.charCodeAt(0) - 97;
+      const rank = 8 - (parseInt(row[1]) - 1);
+      this.row = rank;
+      this.col = file;
+    } else {
+      this.row = row;
+      this.col = col;
     }
+  }
 
+  toString() {
+    return `(${this.row}, ${this.col})`;
+  }
 
-    toString() {
-        return `(${this.row}, ${this.col})`;
-    }
+  toChessNotation() {
+    const file = String.fromCharCode('A'.charCodeAt(0) + this.col);
+    const rank = 8 - this.row;
+    return `${file}${rank}`;
+  }
 
-    toChessNotation() {
-        const colToLetter = (col) => String.fromCharCode(col + 97);
-        return `${colToLetter(this.col)}${this.row + 1}`;
-    }
+  equals(other) {
+    if (!(other instanceof Position)) return false;
+    return this.row === other.row && this.col === other.col;
+  }
 }

@@ -8,7 +8,9 @@ export class King extends Piece {
         super(color, PieceType.KING)
     }
 
-    getLegalMoves(row, col, board) {
+    getLegalMoves(pos, board) {
+        const row = pos.row;
+        const col = pos.col;
         const directions = [
             [0, 1], [0, -1], [1, 0], [-1, 0],
             [1, 1], [1, -1], [-1, 1], [-1, -1]
@@ -20,9 +22,9 @@ export class King extends Piece {
             let r = row + dx;
             let c = col + dy;
             if (r >= 0 && r < 8 && c >= 0 && c < 8) {
-                if ((!board.getSquare(r, c).isOccupied() ||
-                    board.getSquare(r, c).getPiece().getColor() !== this._color) &&
-                    !board.getSquare(r, c).getThreatened()) {
+                if ((!board.getSquare(new Position(r, c)).isOccupied() ||
+                    board.getSquare(new Position(r, c)).getPiece().getColor() !== this._color) &&
+                    !board.getSquare(new Position(r, c)).getThreatened()) {
                     moves.push(new Position(r, c))
                 }
             }
@@ -31,8 +33,8 @@ export class King extends Piece {
     }
 
 
-    getThreatMoves(row, col, board) {
-        return this.getLegalMoves(row, col, board);
+    getThreatMoves(pos, board) {
+        return this.getLegalMoves(pos, board);
     }
 
     getValue() {

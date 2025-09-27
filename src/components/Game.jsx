@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer } from "react";
-import { gameReducer, getInitialState } from "../logic/gameReducer";
+import { gameReducer, getInitialState } from "../logic/gameReducerNew";
 import "./Game.css";
 import ChessBoardLabels from "./ChessBoardWithLabels";
 import PawnPromotion from "./PawnPromotion";
@@ -7,6 +7,8 @@ import { Queen } from "../logic/pieces/Queen";
 import { Rook } from "../logic/pieces/Rook";
 import { Bishop } from "../logic/pieces/Bishop";
 import { Knight } from "../logic/pieces/Knight";
+import { Move } from "../logic/Move";
+import { Position } from "../logic/Position";
 
 export const TurnContext = createContext();
 export const useTurn = () => {
@@ -29,7 +31,7 @@ const GameComponent = ({
   const {
     game,
     //board,
-    selectedSquare,
+    selectedSquare: selectedSquareRaw,
     selectedPiece,
     validMoves,
     threatenedSquares,
@@ -37,10 +39,22 @@ const GameComponent = ({
     lastMove,
   } = state;
 
+  // המר את selectedSquare ל-Position instance אם הוא קיים (עם memoization)
+  const selectedSquare = React.useMemo(() => {
+    if (!selectedSquareRaw) return null;
+
+    // אם זה כבר Position object, החזר אותו כמו שהוא
+    if (selectedSquareRaw instanceof Position) {
+      return selectedSquareRaw;
+    }
+
+    // אחרת, צור Position חדש
+    return new Position(selectedSquareRaw.row, selectedSquareRaw.col);
+  }, [selectedSquareRaw]);
+
   const [whiteClock, setWhiteClock] = React.useState(timeLimit.value);
   const [blackClock, setBlackClock] = React.useState(timeLimit.value);
   const [trigger, setTrigger] = React.useState(false);
-  //const [assistantMove, setAssistantMove] = React.useState(null);
   const [popupPiecePromotion, setPopupPiecePromotion] = React.useState(null);
 
   const moves = React.useRef([]);
@@ -59,14 +73,15 @@ const GameComponent = ({
 
   const enemyColor = playerColor === "w" ? "b" : "w";
 
+  //===========================================
   React.useEffect(() => {
-    if (!lastMove) return;
-    const { row, col } = lastMove.actions[0].move.to;
-    const piece = game.getBoard().getSquare(row, col).getPiece();
+    if (!lastMove || !game) return;
+    const pos = lastMove.to;
+    const piece = game.getBoard().getSquare(pos).getPiece();
     if (piece && piece._needPromotion) {
       setPopupPiecePromotion(piece);
     }
-  }, [lastMove]);
+  }, [lastMove, game]);
   //===========================================
 
   React.useEffect(() => {
@@ -86,27 +101,47 @@ const GameComponent = ({
     let lastInfo = null;
     engine.onmessage = (e) => {
       if (e.data.startsWith("bestmove")) {
-        //console.log(e.data);
-        
         const bestMove = e.data.split(" ")[1];
         bestMoveRef.current = bestMove;
-        console.log(bestMoveRef.current);
 
         if (turnRef.current !== enemyColor) {
           return;
         }
-        console.log(lastInfo);
 
-        
+        if (!bestMove || bestMove.length < 4) {
+          console.error("Invalid bestMove:", bestMove);
+          return;
+        }
+
+        if (!game) {
+          console.error("No game object available for AI move");
+          return;
+        }
+        const test = new Position(bestMove.substring(0, 2));
+        //nst testMatrix = test.toMatrixPosition();
+        console.log("Test Position:", test);
         const from = game.chessNotationToPos(bestMove.substring(0, 2));
         const to = game.chessNotationToPos(bestMove.substring(2, 4));
+        console.log("AI bestMove:", bestMove, "from:", from, "to:", to);
+        
+        if (!from || !to) {
+          console.error("Invalid positions:", { from, to, bestMove });
+          return;
+        }
+
+        const piece = game.getBoard().getSquare(from).getPiece();
+        if (!piece) {
+          console.error("No piece at from position:", from);
+          return;
+        }
+
+        const capturedPiece = game.getBoard().getSquare(to).getPiece() || null;
         dispatch({
           type: "MOVE",
           payload: {
-            fromRow: from.row,
-            fromCol: from.col,
-            toRow: to.row,
-            toCol: to.col,
+            piece: piece,
+            from: from,
+            to: to,
           },
         });
       }
@@ -116,7 +151,6 @@ const GameComponent = ({
   //===========================================
 
   React.useEffect(() => {
-    console.log("Turn changed to:", turn);
     turnRef.current = turn;
 
     updateTimers();
@@ -130,21 +164,22 @@ const GameComponent = ({
       mounted.current = true;
       return;
     }
-    if (game.checkGameOver()) {
-      console.log("Game Over");
+    if (game && game.checkGameOver()) {
       setTimeout(() => {
         onBack();
       }, 3000);
     }
 
-    if (game.getLastMove()) {
-      moves.current.push(game.getLastMove().actions[0].moveChessNotation);
+    if (game && game.getLastMove()) {
+      moves.current.push(game.getLastMove().toChessNotation());
 
       if (
         playerModeRef.current === "pve" &&
         turnRef.current !== playerColorRef.current
       ) {
         setTimeout(() => {
+          console.log("AI thinking with moves:", moves.current);
+          
           engineRef.current.postMessage(
             `position startpos moves ${moves.current.join(" ")}`
           );
@@ -165,6 +200,9 @@ const GameComponent = ({
   }, []);
   //===========================================
 
+  React.useEffect(() => {}, [selectedSquare]);
+  //===========================================
+
   const handleSquareSelection = (row, col) => {
     if (
       playerModeRef.current === "pve" &&
@@ -172,59 +210,84 @@ const GameComponent = ({
     ) {
       return;
     }
-    handlePieceSelection(row, col);
 
-    if (selectedPiece) {
-      const isValid = validMoves.some(
-        (move) => move.row === row && move.col === col
-      );
+    const pos = new Position(row, col);
+    handlePieceSelection(pos);
+
+    if (selectedPiece && selectedSquare) {
+      const isValid =
+        validMoves && Array.isArray(validMoves)
+          ? validMoves.some((move) => move.row === row && move.col === col)
+          : false;
       if (isValid) {
         dispatch({
           type: "MOVE",
           payload: {
-            fromRow: selectedSquare.row,
-            fromCol: selectedSquare.col,
-            toRow: row,
-            toCol: col,
+            piece: selectedPiece,
+            from: selectedSquare,
+            to: pos,
           },
         });
       }
-      handlePieceSelection(row, col);
+      //handlePieceSelection(pos);
       return;
     }
+    // dispatch({
+    //   type: "SELECT_SQUARE",
+    //   payload: { row: row, col: col },
+    // });
   };
   //===========================================
 
-  const handlePieceSelection = (row, col) => {
-    if (
-      game.getBoard().getSquare(row, col).isOccupied() &&
-      game.getBoard().getSquare(row, col).getPiece().getColor() ===
-        game.getCurrentTurn() &&
-      (playerModeRef.current !== "pve" ||
-        game.getCurrentTurn() === playerColorRef.current)
-    ) {
-      const square = game.getBoard().getSquare(row, col);
-      const piece = square.getPiece();
-      const moves = game.calcMoves(row, col, piece);
-      if (moves.length <= 0) {
-        console.error("No valid moves for the selected piece.");
-        return;
-      }
-      dispatch({
-        type: "SELECT_PIECE",
-        payload: {
-          row,
-          col,
-          piece,
-          moves,
-        },
-      });
+  const handlePieceSelection = (pos) => {
+    if (!game) {
+      return;
     }
+    const { row, col } = pos;
+
+    const square = game.getBoard().getSquare(pos);
+    const isOccupied = square.isOccupied();
+
+    if (!isOccupied) {
+      return;
+    }
+
+    const piece = square.getPiece();
+    const pieceColor = piece.getColor();
+    const currentTurn = game.getCurrentTurn();
+
+    if (pieceColor !== currentTurn) {
+      return;
+    }
+
+    if (
+      playerModeRef.current === "pve" &&
+      currentTurn !== playerColorRef.current
+    ) {
+      return;
+    }
+
+    const moves = game.calcMoves(pos, piece);
+
+    if (moves.length <= 0) {
+      return;
+    }
+
+    dispatch({
+      type: "SELECT_PIECE",
+      payload: {
+        row,
+        col,
+        piece,
+        moves,
+      },
+    });
   };
 
   const undoMove = () => {
     redoMoves.current.push(moves.current.pop());
     dispatch({ type: "UNDO" });
+    
   };
 
   const redoMove = () => {
@@ -288,15 +351,15 @@ const GameComponent = ({
     };
 
     const PieceClass = pieceMap[newPiece];
-    if (PieceClass) {
+    if (PieceClass && game && game.getLastMove()) {
       const promoted = new PieceClass(pawn.getColor());
-      game
-        .getBoard()
-        .setPiece(
-          game.getLastMove().actions[0].move.to.row,
-          game.getLastMove().actions[0].move.to.col,
-          promoted
-        );
+      game.getBoard().setPiece(
+        // game.getLastMove().actions[0].move.to.row,
+        // game.getLastMove().actions[0].move.to.col,
+        // promoted
+        game.getLastMove().to,
+        promoted
+      );
       setPopupPiecePromotion(null);
     }
   };
@@ -316,12 +379,12 @@ const GameComponent = ({
             back
           </button>
 
-          {game.getLastMove() && (
+          {game && game.getLastMove() && (
             <button className="button undoBtn" onClick={undoMove}>
               Undo Move
             </button>
           )}
-          {game.getForwardMove() && (
+          {game && game.getForwardMove() && (
             <button className="button redoBtn" onClick={redoMove}>
               Redo Move
             </button>
@@ -348,24 +411,26 @@ const GameComponent = ({
           </div>
         </div>
         <h3 className="turn-indicator">
-          Current Turn: {turn === "w" ? "White" : "Black"}
+          UPDATED CODE - Current Turn: {turn === "w" ? "White" : "Black"}
         </h3>
-        {game.getWinner() && (
+        {game && game.getWinner() && (
           <div className="winner-popup">
             <h3 className="winner-message">
               Winner: {game.getWinner() === "w" ? "White" : "Black"}
             </h3>
           </div>
         )}
-        <ChessBoardLabels
-          playerColor={playerColor}
-          board={game.getBoard()}
-          handleSquareClick={handleSquareSelection}
-          isSelected={selectedSquare}
-          highlightedSq={validMoves}
-          threatenedSq={threatenedSquares}
-          lastMove={lastMove}
-        />
+        {game && (
+          <ChessBoardLabels
+            playerColor={playerColor}
+            board={game.getBoard()}
+            handleSquareClick={handleSquareSelection}
+            isSelected={selectedSquareRaw}
+            highlightedSq={validMoves || []}
+            threatenedSq={threatenedSquares || []}
+            lastMove={lastMove}
+          />
+        )}
         {popupPiecePromotion && (
           <PawnPromotion piece={popupPiecePromotion} onPromote={onPromotion} />
         )}

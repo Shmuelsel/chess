@@ -8,7 +8,9 @@ export class Queen extends Piece {
         super(color, PieceType.QUEEN);
     }
 
-    getLegalMoves(row, col, board) {
+    getLegalMoves(pos, board) {
+        const row = pos.row;
+        const col = pos.col;
         const directions = [
             [1, 0], [-1, 0], [0, 1], [0, -1],
             [1, 1], [-1, -1], [1, -1], [-1, 1]
@@ -20,8 +22,8 @@ export class Queen extends Piece {
             let r = row + dx;
             let c = col + dy;
             while (r >= 0 && r < 8 && c >= 0 && c < 8) {
-                if (board.getSquare(r, c).isOccupied()) {
-                    if (board.getSquare(r, c).getPiece().getColor() !== this._color) {
+                if (board.getSquare(new Position(r, c)).isOccupied()) {
+                    if (board.getSquare(new Position(r, c)).getPiece().getColor() !== this._color) {
                         moves.push(new Position(r, c));
                     }
                     break;
@@ -36,8 +38,8 @@ export class Queen extends Piece {
         return moves;
     }
 
-    getThreatMoves(row, col, board) {
-        return this.getLegalMoves(row, col, board);
+    getThreatMoves(pos, board) {
+        return this.getLegalMoves(pos, board);
     }
 
     getValue() {

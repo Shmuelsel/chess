@@ -14,11 +14,11 @@ export class Piece {
         this._needPromotion = false;
     }
 
-    getLegalMoves(row, col, board){
+    getLegalMoves(pos, board){
         throw new Error("you must override getLegalMoves() in the subclass");
     }
 
-    getThreatMoves(row, col, board){
+    getThreatMoves(pos, board){
         throw new Error("you must override getThreatMoves() in the subclass");
     }
 
