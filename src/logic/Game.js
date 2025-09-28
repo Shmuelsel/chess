@@ -227,18 +227,19 @@ export class Game {
     } else if (to.col - from.col === 2) {
       // Castling move
       const rookCol = 7; // Determine rook's column
-      const rook = this.#board.getPiece(from.row, rookCol);
+      const rook = this.#board.getPiece(new Position(from.row, rookCol));
       if (rook && rook instanceof Rook && !rook._hasMoved) {
         this.#board.setPiece(new Position(from.row, to.col - 1), rook);
         this.#lastMove.special = "kingside castling";
         move.isCastling.kingside = true;
-        this.#lastMove.actions.push({
-          piece: rook,
-          move: {
-            from: { row: from.row, col: rookCol },
-            to: { row: from.row, col: to.col - 1 },
-          },
-        });
+        // this.#lastMove.actions.push({
+        //   piece: rook,
+        //   move: {
+        //     from: { row: from.row, col: rookCol },
+        //     to: { row: from.row, col: to.col - 1 },
+        //   },
+        // });
+
         rook.incrementNumMoves();
         this.#board.setPiece(new Position(from.row, rookCol), null);
       }
@@ -368,7 +369,7 @@ export class Game {
       if (
         this.#board.getSquare(new Position(row, 0)).isOccupied() &&
         this.#board.getSquare(new Position(row, 0)).getPiece() instanceof
-          Rook &&
+        Rook &&
         !this.#board.getSquare(new Position(row, 0)).getPiece()._hasMoved
       ) {
         this.#castling[this.#currentTurn].queenside = true;
@@ -448,6 +449,21 @@ export class Game {
     } else {
       this.#board.setPiece(lastMove.to, null);
     }
+    
+    // אם היה הצרחה החזר את הצריח למקומו
+    if (lastMove.isCastling) {
+      if (lastMove.isCastling.kingside) {
+        const rook = this.#board.getPiece(new Position(lastMove.from.row, 5));
+        this.#board.setPiece(new Position(lastMove.from.row, 7), rook);
+        this.#board.setPiece(new Position(lastMove.from.row, 5), null);
+        rook.decrementNumMoves();
+      }else if (lastMove.isCastling.queenside) {
+        const rook = this.#board.getPiece(new Position(lastMove.from.row, 3));
+        this.#board.setPiece(new Position(lastMove.from.row, 0), rook);
+        this.#board.setPiece(new Position(lastMove.from.row, 3), null);
+        rook.decrementNumMoves();
+      }
+    }
 
     // עדכן את מצב הכלי
     piece.decrementNumMoves();
@@ -462,9 +478,6 @@ export class Game {
         ? this.#moveHistory[this.#moveHistory.length - 1]
         : null;
     this.switchTurn();
-    console.log(this.#lastMove);
-    console.log(this.#moveHistory);
-
   }
   //===========================================
 
@@ -480,6 +493,20 @@ export class Game {
     this.#board.setPiece(moveToRedo.to, piece);
     this.#board.setPiece(moveToRedo.from, null);
     piece.incrementNumMoves();
+
+    if (moveToRedo.isCastling) {
+      if (moveToRedo.isCastling.kingside) {
+        const rook = this.#board.getPiece(new Position(moveToRedo.from.row, 7));
+        this.#board.setPiece(new Position(moveToRedo.from.row, 5), rook);
+        this.#board.setPiece(new Position(moveToRedo.from.row, 7), null);
+        rook.decrementNumMoves();
+      } else if (moveToRedo.isCastling.queenside) {
+        const rook = this.#board.getPiece(new Position(moveToRedo.from.row, 3));
+        this.#board.setPiece(new Position(moveToRedo.from.row, 0), rook);
+        this.#board.setPiece(new Position(moveToRedo.from.row, 3), null);
+        rook.decrementNumMoves();
+      }
+    }
 
     this.#moveHistory.push(moveToRedo);
     this.#lastMove =
@@ -504,14 +531,14 @@ export class Game {
     newGame.#check = { ...this.#check };
     newGame.#lastMove = this.#lastMove
       ? {
-          from: new Position(this.#lastMove.from.row, this.#lastMove.from.col),
-          to: new Position(this.#lastMove.to.row, this.#lastMove.to.col),
-          piece: this.#lastMove.piece,
-          capturedPiece: this.#lastMove.capturedPiece,
-          isEnPassant: this.#lastMove.isEnPassant,
-          isCastling: this.#lastMove.isCastling,
-          promotionType: this.#lastMove.promotionType,
-        }
+        from: new Position(this.#lastMove.from.row, this.#lastMove.from.col),
+        to: new Position(this.#lastMove.to.row, this.#lastMove.to.col),
+        piece: this.#lastMove.piece,
+        capturedPiece: this.#lastMove.capturedPiece,
+        isEnPassant: this.#lastMove.isEnPassant,
+        isCastling: this.#lastMove.isCastling,
+        promotionType: this.#lastMove.promotionType,
+      }
       : null;
     return newGame;
   }
@@ -545,5 +572,10 @@ export class Game {
     const file = notation.charCodeAt(0) - 97;
     const rank = 8 - parseInt(notation.charAt(1), 10);
     return new Position(rank, file);
+  }
+  //===========================================
+
+  getMoveHistory() {
+    return this.#moveHistory;
   }
 }

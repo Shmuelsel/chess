@@ -24,10 +24,6 @@ export class Board {
       }
     }
 
-    // this.enemyColor = this.playerColor === "w" ? "b" : "w";
-    // var queenCol = this.playerColor === "w" ? 3 : 4;
-    // var kingCol = this.playerColor === "w" ? 4 : 3;
-
     for (let col = 0; col < 8; col++) {
       this.#squares[1][col] = new Square(1, col, new Pawn("b", "p")); // Black pawns
       this.#squares[6][col] = new Square(6, col, new Pawn("w", "p")); // White pawns
@@ -55,20 +51,13 @@ export class Board {
   getPiece(pos) {
     return this.#squares[pos.row][pos.col].getPiece();
   }
-  //=============================================
-  // getPiece(row, col) {
-  //   return this.#squares[row][col].getPiece();
-  // }
+  
   //=============================================
   setPiece(pos, piece) {
     this.#squares[pos.row][pos.col].setPiece(piece);
   }
   //=============================================
-  // setPiece(row, col, piece) {
-  //   this.#squares[row][col].setPiece(piece);
-  // }
-  //=============================================
-
+  
   movePiece(move) {
     const from = move.from;
     const to = move.to;

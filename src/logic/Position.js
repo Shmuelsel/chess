@@ -5,7 +5,7 @@ export class Position {
     if (typeof row === "string") {
       // If the first parameter is a string, treat it as chess notation
       const file = row.charCodeAt(0) - 97;
-      const rank = 8 - (parseInt(row[1]) - 1);
+      const rank = 8 - (parseInt(row[1]));
       this.row = rank;
       this.col = file;
     } else {

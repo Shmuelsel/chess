@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer } from "react";
+import React, { createContext, useContext, useReducer, useState } from "react";
 import { gameReducer, getInitialState } from "../logic/gameReducerNew";
 import "./Game.css";
 import ChessBoardLabels from "./ChessBoardWithLabels";
@@ -56,9 +56,6 @@ const GameComponent = ({
   const [blackClock, setBlackClock] = React.useState(timeLimit.value);
   const [trigger, setTrigger] = React.useState(false);
   const [popupPiecePromotion, setPopupPiecePromotion] = React.useState(null);
-
-  const moves = React.useRef([]);
-  const redoMoves = React.useRef([]);
   const engineRef = React.useRef(null);
   const startTimeRef = React.useRef(Date.now());
   const whiteElapsedRef = React.useRef(0);
@@ -72,7 +69,8 @@ const GameComponent = ({
   const bestMoveRef = React.useRef(null);
 
   const enemyColor = playerColor === "w" ? "b" : "w";
-
+  const [recommendedMove, setRecommendedMove] = useState(null);
+  const [showRecommended, setShowRecommended] = useState(false);
   //===========================================
   React.useEffect(() => {
     if (!lastMove || !game) return;
@@ -99,12 +97,17 @@ const GameComponent = ({
 
     engineRef.current = engine;
     let lastInfo = null;
+
     engine.onmessage = (e) => {
       if (e.data.startsWith("bestmove")) {
         const bestMove = e.data.split(" ")[1];
         bestMoveRef.current = bestMove;
-
         if (turnRef.current !== enemyColor) {
+          const from = new Position(bestMove.substring(0, 2));
+          const to = new Position(bestMove.substring(2, 4));
+          setRecommendedMove({ from, to });
+          console.log(bestMove);
+          console.log("Recommended Move:", { from, to });
           return;
         }
 
@@ -123,7 +126,7 @@ const GameComponent = ({
         const from = game.chessNotationToPos(bestMove.substring(0, 2));
         const to = game.chessNotationToPos(bestMove.substring(2, 4));
         console.log("AI bestMove:", bestMove, "from:", from, "to:", to);
-        
+
         if (!from || !to) {
           console.error("Invalid positions:", { from, to, bestMove });
           return;
@@ -152,7 +155,6 @@ const GameComponent = ({
 
   React.useEffect(() => {
     turnRef.current = turn;
-
     updateTimers();
 
     if (firstRender.current) {
@@ -170,23 +172,20 @@ const GameComponent = ({
       }, 3000);
     }
 
-    if (game && game.getLastMove()) {
-      moves.current.push(game.getLastMove().toChessNotation());
-
-      if (
-        playerModeRef.current === "pve" &&
-        turnRef.current !== playerColorRef.current
-      ) {
-        setTimeout(() => {
-          console.log("AI thinking with moves:", moves.current);
-          
-          engineRef.current.postMessage(
-            `position startpos moves ${moves.current.join(" ")}`
-          );
-          engineRef.current.postMessage(`go depth ${level}`);
-        }, 500);
-      }
+    if (
+      game &&
+      game.getLastMove() &&
+      playerModeRef.current === "pve" &&
+      turnRef.current !== playerColorRef.current
+    ) {
+      setTimeout(() => {
+        const moveHistory = game.getMoveHistory().map((m) => m.toChessNotation()).join(" ");
+        console.log("AI thinking with moves:", moveHistory);
+        engineRef.current.postMessage(`position startpos moves ${moveHistory}`);
+        engineRef.current.postMessage(`go depth ${level}`);
+      }, 500);
     }
+    console.log("moves:", game.getMoveHistory());
   }, [turn]);
   //===========================================
 
@@ -285,13 +284,10 @@ const GameComponent = ({
   };
 
   const undoMove = () => {
-    redoMoves.current.push(moves.current.pop());
     dispatch({ type: "UNDO" });
-    
   };
 
   const redoMove = () => {
-    moves.current.push(redoMoves.current.pop());
     dispatch({ type: "REDO" });
   };
 
@@ -302,10 +298,7 @@ const GameComponent = ({
     });
     setWhiteClock(timeLimit.value);
     setBlackClock(timeLimit.value);
-    moves.current = [];
-    redoMoves.current = [];
     setTrigger(!trigger);
-
     // Reset timer references
     whiteElapsedRef.current = 0;
     blackElapsedRef.current = 0;
@@ -365,10 +358,13 @@ const GameComponent = ({
   };
 
   const handleTip = () => {
-    engineRef.current.postMessage(
-      `position startpos moves ${moves.current.join(" ")}`
-    );
-    engineRef.current.postMessage(`go depth ${level}`);
+    if (game) {
+      const moveHistory = game.getMoveHistory().map((m) => m.toChessNotation()).join(" ");
+      engineRef.current.postMessage(`position startpos moves ${moveHistory}`);
+      engineRef.current.postMessage(`go depth ${level}`);
+      setShowRecommended(true);
+      setTimeout(() => setShowRecommended(false), 4500); // 3*1.5 שניות
+    }
   };
 
   return (
@@ -429,6 +425,7 @@ const GameComponent = ({
             highlightedSq={validMoves || []}
             threatenedSq={threatenedSquares || []}
             lastMove={lastMove}
+            recommendedMove={showRecommended ? recommendedMove : null}
           />
         )}
         {popupPiecePromotion && (
@@ -445,8 +442,8 @@ const GameComponent = ({
         <div className="move-history">
           <h4>Move History</h4>
           <ul>
-            {moves.current.map((move, index) => (
-              <li key={index}>{move}</li>
+            {game && game.getMoveHistory().map((move, index) => (
+              <li key={index}>{move.toChessNotation()}</li>
             ))}
           </ul>
         </div>

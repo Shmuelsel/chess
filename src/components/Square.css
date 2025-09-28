@@ -63,3 +63,14 @@
   background-color: rgba(245, 4, 4, 0.89);
 }
 
+.square.recommended {
+  /* הבהוב 2 פעמים בצבע עז */
+  box-shadow: 0 0 10px 5px rgba(0, 255, 0, 0.7);
+  animation: glowing 1s 3;
+}
+
+@keyframes glowing {
+  0% { box-shadow: 0 0 5px rgba(0, 255, 0, 0.7); }
+  50% { box-shadow: 0 0 20px rgba(0, 255, 0, 0.7); }
+  100% { box-shadow: 0 0 5px rgba(0, 255, 0, 0.7); }
+}

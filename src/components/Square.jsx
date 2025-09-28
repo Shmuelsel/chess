@@ -5,7 +5,7 @@ import { useTurn } from "./Game";
 
 
 
-const Square = ({ isSelected, onClick, square, row, col, isHighlighted, isThreatened, kingsPosition, isLastMoveFrom, isLastMoveTo, playerColor }) => {
+const Square = ({ isSelected, onClick, square, row, col, isHighlighted, isThreatened, kingsPosition, isLastMoveFrom, isLastMoveTo, playerColor, isRecommended }) => {
   const piece = square.getPiece();
   const { turn } = useTurn();
 
@@ -18,6 +18,7 @@ const Square = ({ isSelected, onClick, square, row, col, isHighlighted, isThreat
                               ${isHighlighted ? 'highlighted' : ''}
                               ${isHighlighted && square.getPiece() ? 'eatable' : ''}
                               ${isThreatened ? 'threatened' : ''}
+                              ${isRecommended ? 'recommended' : ''}
                               ${isThreatened && square.getPiece() && square.getPiece().getType() === 'k' ? 'check' : ''}`;
 
 

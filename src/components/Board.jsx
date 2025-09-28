@@ -11,6 +11,7 @@ const Board = ({
   threatenedSq,
   lastMove,
   playerColor,
+  recommendedMove,
 }) => {
   return (
     <div className={playerColor === "w" ? "board" : "board transformed"}>
@@ -39,6 +40,13 @@ const Board = ({
                       threatenedSq.some((pos) => {
                         return pos.row === rowIndex && pos.col === colIndex;
                       })
+                    }
+                    isRecommended={
+                      recommendedMove &&
+                      ((recommendedMove.from.row === rowIndex &&
+                        recommendedMove.from.col === colIndex) ||
+                        (recommendedMove.to.row === rowIndex &&
+                          recommendedMove.to.col === colIndex))
                     }
                     square={square}
                     onClick={() => handleSquareClick(rowIndex, colIndex)}

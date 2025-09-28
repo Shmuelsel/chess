@@ -9,7 +9,8 @@ const ChessBoardWithLabels = ({
     isSelected,
     highlightedSq,
     threatenedSq,
-    lastMove
+    lastMove,
+    recommendedMove,
 }) => {
     const letters = ["a", "b", "c", "d", "e", "f", "g", "h"];
     const numbers = [8, 7, 6, 5, 4, 3, 2, 1];
@@ -33,6 +34,7 @@ const ChessBoardWithLabels = ({
                     highlightedSq={highlightedSq}
                     threatenedSq={threatenedSq}
                     lastMove={lastMove}
+                    recommendedMove={recommendedMove}
                 />
 
                 {/* האותיות למטה */}
