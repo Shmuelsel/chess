@@ -18,6 +18,7 @@ export class Game {
   #check = { w: false, b: false };
   #lastMove = null;
   #enPassant = null;
+  #playerColor = "w";
   #castling = {
     w: { kingside: false, queenside: false },
     b: { kingside: false, queenside: false },
@@ -27,6 +28,7 @@ export class Game {
     playerColor = "w",
     gameMode = { type: "pve", aiLevel: "medium" }
   ) {
+    this.#playerColor = playerColor;
     this.#currentTurn = "w";
     this.#board = new Board(playerColor);
     this.#kingPos = { b: { x: 4, y: 0 }, w: { x: 4, y: 7 } };
@@ -419,6 +421,8 @@ export class Game {
   //===========================================
 
   undoMove() {
+    console.log("Undoing move...");
+    
     if (this.#moveHistory.length === 0) {
       console.error("No moves to undo.");
       return;
@@ -427,12 +431,9 @@ export class Game {
       this.#winner = null;
     }
     const lastMove = this.#moveHistory.pop();
-
-    // הוזר את הכלי מהמיקום החדש למיקום הישן
     const piece = lastMove.piece;
     this.#board.setPiece(lastMove.from, piece);
 
-    // אם היה כלי שנתפס, החזר אותו למקום
     if (lastMove.capturedPiece) {
       if (lastMove.isEnPassant) {
         const direction = piece.getColor() === "w" ? 1 : -1;
@@ -484,7 +485,14 @@ export class Game {
       console.error("No moves to redo.");
       return;
     }
+    // console.log("Forward moves:", this.#forwardMove);
     const moveToRedo = this.#forwardMove.pop();
+    // for (let i = 0; i < this.#forwardMove.length; i++) {
+    //   const moveToRedo = this.#forwardMove[this.#forwardMove.length - 1 - i];
+    //   console.log("Redoing move:", moveToRedo);
+      
+    //   this.movePiece(moveToRedo);
+    // }
 
     // בצע את המהלך מחדש
     const piece = moveToRedo.piece;

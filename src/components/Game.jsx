@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useReducer, useState } from "react";
 import { gameReducer, getInitialState } from "../logic/gameReducerNew";
 import "./Game.css";
-import {Move} from "../logic/Move";
+import { Move } from "../logic/Move";
 import ChessBoardLabels from "./ChessBoardWithLabels";
 import PawnPromotion from "./PawnPromotion";
 import { Queen } from "../logic/pieces/Queen";
@@ -9,6 +9,7 @@ import { Rook } from "../logic/pieces/Rook";
 import { Bishop } from "../logic/pieces/Bishop";
 import { Knight } from "../logic/pieces/Knight";
 import { Position } from "../logic/Position";
+import { type } from "@testing-library/user-event/dist/type";
 
 export const TurnContext = createContext();
 export const useTurn = () => {
@@ -24,7 +25,7 @@ const GameComponent = ({
 }) => {
   const [state, dispatch] = useReducer(
     gameReducer,
-    getInitialState(playerColor)
+    getInitialState(playerColor, playerMode)
   );
 
   // Extract from state
@@ -40,17 +41,17 @@ const GameComponent = ({
   } = state;
 
   // המר את selectedSquare ל-Position instance אם הוא קיים (עם memoization)
-//   const selectedSquare = React.useMemo(() => {
-//     if (!selectedSquareRaw) return null;
+  //   const selectedSquare = React.useMemo(() => {
+  //     if (!selectedSquareRaw) return null;
 
-//     // אם זה כבר Position object, החזר אותו כמו שהוא
-//     if (selectedSquareRaw instanceof Position) {
-//       return selectedSquareRaw;
-//     }
+  //     // אם זה כבר Position object, החזר אותו כמו שהוא
+  //     if (selectedSquareRaw instanceof Position) {
+  //       return selectedSquareRaw;
+  //     }
 
-//     // אחרת, צור Position חדש
-//     return new Position(selectedSquareRaw.row, selectedSquareRaw.col);
-//   }, [selectedSquareRaw]);
+  //     // אחרת, צור Position חדש
+  //     return new Position(selectedSquareRaw.row, selectedSquareRaw.col);
+  //   }, [selectedSquareRaw]);
 
   const [whiteClock, setWhiteClock] = React.useState(timeLimit.value);
   const [blackClock, setBlackClock] = React.useState(timeLimit.value);
@@ -67,6 +68,7 @@ const GameComponent = ({
   const mounted = React.useRef(false);
   const timerRef = React.useRef(null);
   const bestMoveRef = React.useRef(null);
+  const aiPromoteRef = React.useRef(null);
 
   const enemyColor = playerColor === "w" ? "b" : "w";
   const [recommendedMove, setRecommendedMove] = useState(null);
@@ -106,12 +108,18 @@ const GameComponent = ({
           const to = new Position(bestMove.substring(2, 4));
           setRecommendedMove(new Move(from, to));
           console.log("Recommended Move:", { from, to });
+          dispatch({ type: "MOVE", payload: { from, to } });
           return;
         }
 
         if (!bestMove || bestMove.length < 4) {
           console.error("Invalid bestMove:", bestMove);
           return;
+        }
+
+        if (bestMove.length > 4) {
+          const promotionType = bestMove.charAt(4);
+          aiPromoteRef.current = promotionType;
         }
 
         if (!game) {
@@ -151,15 +159,15 @@ const GameComponent = ({
     turnRef.current = turn;
     updateTimers();
 
-    if (firstRender.current) {
-      firstRender.current = false;
-      return;
-    }
-    // for strict mode in development
-    if (!mounted.current) {
-      mounted.current = true;
-      return;
-    }
+    // if (firstRender.current) {
+    //   firstRender.current = false;
+    //   return;
+    // }
+    // // for strict mode in development
+    // if (!mounted.current) {
+    //   mounted.current = true;
+    //   return;
+    // }
     if (game && game.checkGameOver()) {
       setTimeout(() => {
         onBack();
@@ -173,7 +181,10 @@ const GameComponent = ({
       turnRef.current !== playerColorRef.current
     ) {
       setTimeout(() => {
-        const moveHistory = game.getMoveHistory().map((m) => m.toChessNotation()).join(" ");
+        const moveHistory = game
+          .getMoveHistory()
+          .map((m) => m.toChessNotation())
+          .join(" ");
         console.log("AI thinking with moves:", moveHistory);
         engineRef.current.postMessage(`position startpos moves ${moveHistory}`);
         engineRef.current.postMessage(`go depth ${level}`);
@@ -195,7 +206,6 @@ const GameComponent = ({
 
   React.useEffect(() => {
     console.log("Selected Square changed:", selectedSquare);
-    
   }, [selectedSquare]);
   //===========================================
 
@@ -274,7 +284,7 @@ const GameComponent = ({
       },
     });
   };
-    //===========================================
+  //===========================================
   const undoMove = () => {
     dispatch({ type: "UNDO" });
   };
@@ -282,11 +292,11 @@ const GameComponent = ({
   const redoMove = () => {
     dispatch({ type: "REDO" });
   };
-    //===========================================
+  //===========================================
   const resetGame = () => {
     dispatch({
       type: "RESET_GAME",
-      payload: { playerColor },
+      payload: { playerColor, playerMode },
     });
     setWhiteClock(timeLimit.value);
     setBlackClock(timeLimit.value);
@@ -295,7 +305,7 @@ const GameComponent = ({
     whiteElapsedRef.current = 0;
     blackElapsedRef.current = 0;
   };
-    //===========================================
+  //===========================================
   const updateTimers = () => {
     // Clear existing timer
     if (timerRef.current) {
@@ -326,7 +336,7 @@ const GameComponent = ({
       }
     }, 100);
   };
-    //===========================================
+  //===========================================
   const onPromotion = (pawn, newPiece) => {
     const pieceMap = {
       Queen,
@@ -338,17 +348,17 @@ const GameComponent = ({
     const PieceClass = pieceMap[newPiece];
     if (PieceClass && game && game.getLastMove()) {
       const promoted = new PieceClass(pawn.getColor());
-      game.getBoard().setPiece(
-        game.getLastMove().to,
-        promoted
-      );
+      game.getBoard().setPiece(game.getLastMove().to, promoted);
       setPopupPiecePromotion(null);
     }
   };
-    //===========================================
+  //===========================================
   const handleTip = () => {
     if (game) {
-      const moveHistory = game.getMoveHistory().map((m) => m.toChessNotation()).join(" ");
+      const moveHistory = game
+        .getMoveHistory()
+        .map((m) => m.toChessNotation())
+        .join(" ");
       engineRef.current.postMessage(`position startpos moves ${moveHistory}`);
       engineRef.current.postMessage(`go depth ${level}`);
       setShowRecommended(true);
@@ -417,7 +427,7 @@ const GameComponent = ({
             recommendedMove={showRecommended ? recommendedMove : null}
           />
         )}
-        {popupPiecePromotion && (
+        {popupPiecePromotion && !aiPromoteRef.current(
           <PawnPromotion piece={popupPiecePromotion} onPromote={onPromotion} />
         )}
         <button className="button rstBtn" onClick={resetGame}>
@@ -431,9 +441,12 @@ const GameComponent = ({
         <div className="move-history">
           <h4>Move History</h4>
           <ul>
-            {game && game.getMoveHistory().map((move, index) => (
-              <li key={index}>{move.toChessNotation()}</li>
-            ))}
+            {game &&
+              game
+                .getMoveHistory()
+                .map((move, index) => (
+                  <li key={index}>{move.toChessNotation()}</li>
+                ))}
           </ul>
         </div>
       </div>
