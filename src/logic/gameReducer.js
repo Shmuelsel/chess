@@ -66,7 +66,7 @@ export function gameReducer(state, action) {
             const { row, col, piece, moves } = action.payload;
             return {
                 ...state,
-                selectedSquare: { row, col },
+                selectedSquare: new Position( row, col ),
                 selectedPiece: piece,
                 validMoves: moves,
             };

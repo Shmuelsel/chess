@@ -25,7 +25,7 @@ export function gameReducer(state, action) {
     switch (action.type) {
       case "MOVE":
         const { piece: movePiece, from: moveFrom, to: moveTo } = action.payload;
-        const move = new Move(movePiece, moveFrom, moveTo);
+        const move = new Move(moveFrom, moveTo, movePiece);
         const moveResult = game.movePiece(move);
 
         if (moveResult) {

@@ -1,13 +1,13 @@
 import React, { createContext, useContext, useReducer, useState } from "react";
 import { gameReducer, getInitialState } from "../logic/gameReducerNew";
 import "./Game.css";
+import {Move} from "../logic/Move";
 import ChessBoardLabels from "./ChessBoardWithLabels";
 import PawnPromotion from "./PawnPromotion";
 import { Queen } from "../logic/pieces/Queen";
 import { Rook } from "../logic/pieces/Rook";
 import { Bishop } from "../logic/pieces/Bishop";
 import { Knight } from "../logic/pieces/Knight";
-import { Move } from "../logic/Move";
 import { Position } from "../logic/Position";
 
 export const TurnContext = createContext();
@@ -31,7 +31,7 @@ const GameComponent = ({
   const {
     game,
     //board,
-    selectedSquare: selectedSquareRaw,
+    selectedSquare,
     selectedPiece,
     validMoves,
     threatenedSquares,
@@ -40,17 +40,17 @@ const GameComponent = ({
   } = state;
 
   // המר את selectedSquare ל-Position instance אם הוא קיים (עם memoization)
-  const selectedSquare = React.useMemo(() => {
-    if (!selectedSquareRaw) return null;
+//   const selectedSquare = React.useMemo(() => {
+//     if (!selectedSquareRaw) return null;
 
-    // אם זה כבר Position object, החזר אותו כמו שהוא
-    if (selectedSquareRaw instanceof Position) {
-      return selectedSquareRaw;
-    }
+//     // אם זה כבר Position object, החזר אותו כמו שהוא
+//     if (selectedSquareRaw instanceof Position) {
+//       return selectedSquareRaw;
+//     }
 
-    // אחרת, צור Position חדש
-    return new Position(selectedSquareRaw.row, selectedSquareRaw.col);
-  }, [selectedSquareRaw]);
+//     // אחרת, צור Position חדש
+//     return new Position(selectedSquareRaw.row, selectedSquareRaw.col);
+//   }, [selectedSquareRaw]);
 
   const [whiteClock, setWhiteClock] = React.useState(timeLimit.value);
   const [blackClock, setBlackClock] = React.useState(timeLimit.value);
@@ -96,7 +96,6 @@ const GameComponent = ({
     }, 1000);
 
     engineRef.current = engine;
-    let lastInfo = null;
 
     engine.onmessage = (e) => {
       if (e.data.startsWith("bestmove")) {
@@ -105,8 +104,7 @@ const GameComponent = ({
         if (turnRef.current !== enemyColor) {
           const from = new Position(bestMove.substring(0, 2));
           const to = new Position(bestMove.substring(2, 4));
-          setRecommendedMove({ from, to });
-          console.log(bestMove);
+          setRecommendedMove(new Move(from, to));
           console.log("Recommended Move:", { from, to });
           return;
         }
@@ -120,9 +118,6 @@ const GameComponent = ({
           console.error("No game object available for AI move");
           return;
         }
-        const test = new Position(bestMove.substring(0, 2));
-        //nst testMatrix = test.toMatrixPosition();
-        console.log("Test Position:", test);
         const from = game.chessNotationToPos(bestMove.substring(0, 2));
         const to = game.chessNotationToPos(bestMove.substring(2, 4));
         console.log("AI bestMove:", bestMove, "from:", from, "to:", to);
@@ -138,7 +133,6 @@ const GameComponent = ({
           return;
         }
 
-        const capturedPiece = game.getBoard().getSquare(to).getPiece() || null;
         dispatch({
           type: "MOVE",
           payload: {
@@ -199,7 +193,10 @@ const GameComponent = ({
   }, []);
   //===========================================
 
-  React.useEffect(() => {}, [selectedSquare]);
+  React.useEffect(() => {
+    console.log("Selected Square changed:", selectedSquare);
+    
+  }, [selectedSquare]);
   //===========================================
 
   const handleSquareSelection = (row, col) => {
@@ -228,13 +225,8 @@ const GameComponent = ({
           },
         });
       }
-      //handlePieceSelection(pos);
       return;
     }
-    // dispatch({
-    //   type: "SELECT_SQUARE",
-    //   payload: { row: row, col: col },
-    // });
   };
   //===========================================
 
@@ -282,15 +274,15 @@ const GameComponent = ({
       },
     });
   };
-
+    //===========================================
   const undoMove = () => {
     dispatch({ type: "UNDO" });
   };
-
+  //===========================================
   const redoMove = () => {
     dispatch({ type: "REDO" });
   };
-
+    //===========================================
   const resetGame = () => {
     dispatch({
       type: "RESET_GAME",
@@ -303,7 +295,7 @@ const GameComponent = ({
     whiteElapsedRef.current = 0;
     blackElapsedRef.current = 0;
   };
-
+    //===========================================
   const updateTimers = () => {
     // Clear existing timer
     if (timerRef.current) {
@@ -334,7 +326,7 @@ const GameComponent = ({
       }
     }, 100);
   };
-
+    //===========================================
   const onPromotion = (pawn, newPiece) => {
     const pieceMap = {
       Queen,
@@ -342,21 +334,18 @@ const GameComponent = ({
       Bishop,
       Knight,
     };
-
+    //===========================================
     const PieceClass = pieceMap[newPiece];
     if (PieceClass && game && game.getLastMove()) {
       const promoted = new PieceClass(pawn.getColor());
       game.getBoard().setPiece(
-        // game.getLastMove().actions[0].move.to.row,
-        // game.getLastMove().actions[0].move.to.col,
-        // promoted
         game.getLastMove().to,
         promoted
       );
       setPopupPiecePromotion(null);
     }
   };
-
+    //===========================================
   const handleTip = () => {
     if (game) {
       const moveHistory = game.getMoveHistory().map((m) => m.toChessNotation()).join(" ");
@@ -366,7 +355,7 @@ const GameComponent = ({
       setTimeout(() => setShowRecommended(false), 4500); // 3*1.5 שניות
     }
   };
-
+  //===========================================
   return (
     <TurnContext.Provider value={{ turn, dispatch, lastMove }}>
       <div className="game">
@@ -421,7 +410,7 @@ const GameComponent = ({
             playerColor={playerColor}
             board={game.getBoard()}
             handleSquareClick={handleSquareSelection}
-            isSelected={selectedSquareRaw}
+            isSelected={selectedSquare}
             highlightedSq={validMoves || []}
             threatenedSq={threatenedSquares || []}
             lastMove={lastMove}

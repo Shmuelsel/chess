@@ -1,6 +1,5 @@
-import React, { useState } from "react";
-import { Game } from "../logic/Game";
 import Square from "./Square";
+import { Position } from "../logic/Position";
 import "./Board.css";
 
 const Board = ({
@@ -26,8 +25,7 @@ const Board = ({
                     key={`${rowIndex}-${colIndex}`}
                     isSelected={
                       isSelected &&
-                      isSelected.row === rowIndex &&
-                      isSelected.col === colIndex
+                      isSelected.equals(new Position(rowIndex, colIndex))
                     }
                     isHighlighted={
                       highlightedSq &&
@@ -38,15 +36,13 @@ const Board = ({
                     isThreatened={
                       threatenedSq &&
                       threatenedSq.some((pos) => {
-                        return pos.row === rowIndex && pos.col === colIndex;
+                        return pos.equals(new Position(rowIndex, colIndex));
                       })
                     }
                     isRecommended={
                       recommendedMove &&
-                      ((recommendedMove.from.row === rowIndex &&
-                        recommendedMove.from.col === colIndex) ||
-                        (recommendedMove.to.row === rowIndex &&
-                          recommendedMove.to.col === colIndex))
+                      ((recommendedMove.from.equals(new Position(rowIndex, colIndex))) ||
+                      (recommendedMove.to.equals(new Position(rowIndex, colIndex))))
                     }
                     square={square}
                     onClick={() => handleSquareClick(rowIndex, colIndex)}
@@ -54,13 +50,11 @@ const Board = ({
                     col={colIndex}
                     isLastMoveFrom={
                       lastMove &&
-                      lastMove.from.row === rowIndex &&
-                      lastMove.from.col === colIndex
+                      lastMove.from.equals(new Position(rowIndex, colIndex))
                     }
                     isLastMoveTo={
                       lastMove &&
-                      lastMove.to.row === rowIndex &&
-                      lastMove.to.col === colIndex
+                      lastMove.to.equals(new Position(rowIndex, colIndex))
                     }
                   />
                 </div>

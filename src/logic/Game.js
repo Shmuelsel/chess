@@ -270,7 +270,7 @@ export class Game {
     const legalMoves = piece.getLegalMoves(pos, this.#board);
 
     legalMoves.forEach(({ row, col }) => {
-      const move = new Move(piece, pos, new Position(row, col));
+      const move = new Move(pos, new Position(row, col), piece );
       const tempBoard = this.#board.clone();
       tempBoard.movePiece(move);
       const kingPos = tempBoard.getKingPosition(this.#currentTurn);
@@ -327,8 +327,6 @@ export class Game {
 
   calcCastling(validMoves, pos, piece) {
     //add castling
-    const fromRow = pos.row;
-    const fromCol = pos.col;
     const row = piece.getColor() === "w" ? 7 : 0;
     const posKingSide1 = new Position(row, 5);
     const posKingSide2 = new Position(row, 6);
