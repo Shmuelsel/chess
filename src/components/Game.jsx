@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useState } from "react";
+import React, { createContext, useContext, useReducer, useState, useCallback } from "react";
 import { gameReducer, getInitialState } from "../logic/gameReducerNew";
 import "./Game.css";
 import { Move } from "../logic/Move";
@@ -9,7 +9,6 @@ import { Rook } from "../logic/pieces/Rook";
 import { Bishop } from "../logic/pieces/Bishop";
 import { Knight } from "../logic/pieces/Knight";
 import { Position } from "../logic/Position";
-import { type } from "@testing-library/user-event/dist/type";
 
 export const TurnContext = createContext();
 export const useTurn = () => {
@@ -25,7 +24,7 @@ const GameComponent = ({
 }) => {
   const [state, dispatch] = useReducer(
     gameReducer,
-    getInitialState(playerColor, playerMode)
+    getInitialState(playerColor, playerMode, level)
   );
 
   // Extract from state
@@ -61,18 +60,44 @@ const GameComponent = ({
   const startTimeRef = React.useRef(Date.now());
   const whiteElapsedRef = React.useRef(0);
   const blackElapsedRef = React.useRef(0);
-  const playerModeRef = React.useRef(playerMode);
-  const playerColorRef = React.useRef(playerColor);
   const turnRef = React.useRef(turn);
-  const firstRender = React.useRef(true);
-  const mounted = React.useRef(false);
   const timerRef = React.useRef(null);
   const bestMoveRef = React.useRef(null);
   const aiPromoteRef = React.useRef(null);
 
-  const enemyColor = playerColor === "w" ? "b" : "w";
   const [recommendedMove, setRecommendedMove] = useState(null);
   const [showRecommended, setShowRecommended] = useState(false);
+  //===========================================
+  const updateTimers = useCallback(() => {
+    // Clear existing timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+
+    startTimeRef.current = Date.now();
+
+    timerRef.current = setInterval(() => {
+      const now = Date.now();
+      const diff = (now - startTimeRef.current) / 1000;
+      startTimeRef.current = now;
+
+      if (turn === "w") {
+        whiteElapsedRef.current += diff;
+
+        if (whiteElapsedRef.current >= 1) {
+          setWhiteClock((prev) => Math.max(prev - 1, 0));
+          whiteElapsedRef.current = 0;
+        }
+      } else {
+        blackElapsedRef.current += diff;
+
+        if (blackElapsedRef.current >= 1) {
+          setBlackClock((prev) => Math.max(prev - 1, 0));
+          blackElapsedRef.current = 0;
+        }
+      }
+    }, 100);
+  }, [turn]);
   //===========================================
   React.useEffect(() => {
     if (!lastMove || !game) return;
@@ -85,7 +110,8 @@ const GameComponent = ({
   //===========================================
 
   React.useEffect(() => {
-    if (playerMode !== "pve") return;
+    const opponentPlayer = game?.getOpponentPlayer();
+    if (!opponentPlayer || !opponentPlayer.isEngine()) return;
 
     const engine = new Worker(
       "/stockfish/stockfish-17.1-lite-single-03e3232.js"
@@ -94,7 +120,7 @@ const GameComponent = ({
 
     setTimeout(() => {
       engine.postMessage("position startpos");
-      engine.postMessage(`go depth ${level}`);
+      engine.postMessage(`go depth ${opponentPlayer.getLevel()}`);
     }, 1000);
 
     engineRef.current = engine;
@@ -103,7 +129,9 @@ const GameComponent = ({
       if (e.data.startsWith("bestmove")) {
         const bestMove = e.data.split(" ")[1];
         bestMoveRef.current = bestMove;
-        if (turnRef.current !== enemyColor) {
+        
+        const currentPlayer = game?.getCurrentPlayer();
+        if (!currentPlayer || !currentPlayer.isEngine()) {
           const from = new Position(bestMove.substring(0, 2));
           const to = new Position(bestMove.substring(2, 4));
           setRecommendedMove(new Move(from, to));
@@ -152,7 +180,7 @@ const GameComponent = ({
       }
     };
     return () => engine.terminate();
-  }, [trigger]);
+  }, [trigger, game, dispatch]);
   //===========================================
 
   React.useEffect(() => {
@@ -174,11 +202,12 @@ const GameComponent = ({
       }, 3000);
     }
 
+    const currentPlayer = game?.getCurrentPlayer();
     if (
       game &&
       game.getLastMove() &&
-      playerModeRef.current === "pve" &&
-      turnRef.current !== playerColorRef.current
+      currentPlayer &&
+      currentPlayer.isEngine()
     ) {
       setTimeout(() => {
         const moveHistory = game
@@ -187,11 +216,11 @@ const GameComponent = ({
           .join(" ");
         console.log("AI thinking with moves:", moveHistory);
         engineRef.current.postMessage(`position startpos moves ${moveHistory}`);
-        engineRef.current.postMessage(`go depth ${level}`);
+        engineRef.current.postMessage(`go depth ${currentPlayer.getLevel()}`);
       }, 500);
     }
     console.log("moves:", game.getMoveHistory());
-  }, [turn]);
+  }, [turn, game, onBack, updateTimers]);
   //===========================================
 
   // Cleanup timer on unmount
@@ -210,10 +239,8 @@ const GameComponent = ({
   //===========================================
 
   const handleSquareSelection = (row, col) => {
-    if (
-      playerModeRef.current === "pve" &&
-      turnRef.current !== playerColorRef.current
-    ) {
+    const currentPlayer = game?.getCurrentPlayer();
+    if (currentPlayer && currentPlayer.isEngine()) {
       return;
     }
 
@@ -261,10 +288,8 @@ const GameComponent = ({
       return;
     }
 
-    if (
-      playerModeRef.current === "pve" &&
-      currentTurn !== playerColorRef.current
-    ) {
+    const currentPlayer = game?.getCurrentPlayer();
+    if (currentPlayer && currentPlayer.isEngine()) {
       return;
     }
 
@@ -304,37 +329,6 @@ const GameComponent = ({
     // Reset timer references
     whiteElapsedRef.current = 0;
     blackElapsedRef.current = 0;
-  };
-  //===========================================
-  const updateTimers = () => {
-    // Clear existing timer
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
-
-    startTimeRef.current = Date.now();
-
-    timerRef.current = setInterval(() => {
-      const now = Date.now();
-      const diff = (now - startTimeRef.current) / 1000;
-      startTimeRef.current = now;
-
-      if (turn === "w") {
-        whiteElapsedRef.current += diff;
-
-        if (whiteElapsedRef.current >= 1) {
-          setWhiteClock((prev) => Math.max(prev - 1, 0));
-          whiteElapsedRef.current = 0;
-        }
-      } else {
-        blackElapsedRef.current += diff;
-
-        if (blackElapsedRef.current >= 1) {
-          setBlackClock((prev) => Math.max(prev - 1, 0));
-          blackElapsedRef.current = 0;
-        }
-      }
-    }, 100);
   };
   //===========================================
   const onPromotion = (pawn, newPiece) => {
@@ -433,7 +427,7 @@ const GameComponent = ({
         <button className="button rstBtn" onClick={resetGame}>
           new game
         </button>
-        {playerMode === "pve" && (
+        {(game?.getWhitePlayer()?.isEngine() || game?.getBlackPlayer()?.isEngine()) && (
           <button className="button tipBtn" onClick={handleTip}>
             💡
           </button>
