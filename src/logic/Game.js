@@ -19,15 +19,20 @@ export class Game {
   #lastMove = null;
   #enPassant = null;
   #playerColor = "w";
+  #whitePlayer;
+  #blackPlayer;
   #castling = {
     w: { kingside: false, queenside: false },
     b: { kingside: false, queenside: false },
   };
 
   constructor(
-    playerColor = "w",
-    gameMode = { type: "pve", aiLevel: "medium" }
+    whitePlayer,
+    blackPlayer,
+    playerColor = "w"
   ) {
+    this.#whitePlayer = whitePlayer;
+    this.#blackPlayer = blackPlayer;
     this.#playerColor = playerColor;
     this.#currentTurn = "w";
     this.#board = new Board(playerColor);
@@ -583,5 +588,25 @@ export class Game {
 
   getMoveHistory() {
     return this.#moveHistory;
+  }
+  //===========================================
+
+  getWhitePlayer() {
+    return this.#whitePlayer;
+  }
+  //===========================================
+
+  getBlackPlayer() {
+    return this.#blackPlayer;
+  }
+  //===========================================
+
+  getCurrentPlayer() {
+    return this.#currentTurn === "w" ? this.#whitePlayer : this.#blackPlayer;
+  }
+  //===========================================
+
+  getOpponentPlayer() {
+    return this.#currentTurn === "w" ? this.#blackPlayer : this.#whitePlayer;
   }
 }

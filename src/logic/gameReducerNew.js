@@ -1,9 +1,28 @@
 import { Game } from "./Game";
 import { Position } from "./Position";
 import { Move } from "./Move";
+import { HumanPlayer } from "./players/HumanPlayer";
+import { EnginePlayer } from "./players/EnginePlayer";
 
-export const getInitialState = (playerColor = "w", playerMode = "pve") => {
-  const game = new Game(playerColor);
+export const getInitialState = (playerColor = "w", playerMode = "pve", level = 5) => {
+  let whitePlayer, blackPlayer;
+  
+  if (playerMode === "pve") {
+    // Player vs Engine mode
+    if (playerColor === "w") {
+      whitePlayer = new HumanPlayer("w");
+      blackPlayer = new EnginePlayer("b", level);
+    } else {
+      whitePlayer = new EnginePlayer("w", level);
+      blackPlayer = new HumanPlayer("b");
+    }
+  } else {
+    // Player vs Player mode
+    whitePlayer = new HumanPlayer("w");
+    blackPlayer = new HumanPlayer("b");
+  }
+
+  const game = new Game(whitePlayer, blackPlayer, playerColor);
   return {
     game: game,
     turn: "w",
@@ -58,7 +77,8 @@ export function gameReducer(state, action) {
           return state; // אין מהלכים לבטל
         }
 
-        if (state.playerMode === "pve") {
+        const opponentPlayer = game.getOpponentPlayer();
+        if (opponentPlayer.isEngine()) {
           // במשחק נגד מנוע: תמיד בטל 2 מהלכים (מנוע + שחקן קודם)
           const movesToUndo = Math.min(2, state.moves.length);
 
@@ -114,7 +134,8 @@ export function gameReducer(state, action) {
           return state; // אין מהלכים לשחזר
         }
 
-        if (state.playerMode === "pve") {
+        const opponentPlayerRedo = game.getOpponentPlayer();
+        if (opponentPlayerRedo.isEngine()) {
           // במשחק נגד מנוע: שחזר 2 מהלכים
           const movesToRedo = Math.min(2, state.redoMoves.length);
 
@@ -185,7 +206,8 @@ export function gameReducer(state, action) {
       case "RESET_GAME":
         return getInitialState(
           action.payload?.playerColor || "w",
-          action.payload?.playerMode || "pve"
+          action.payload?.playerMode || "pve",
+          action.payload?.level || 5
         );
 
       default:
