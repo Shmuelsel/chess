@@ -85,6 +85,7 @@ const GameComponent = ({
   //===========================================
 
   React.useEffect(() => {
+    game.gameStateToFen();
     if (playerMode !== "pve") return;
 
     const engine = new Worker(
@@ -108,7 +109,7 @@ const GameComponent = ({
           const to = new Position(bestMove.substring(2, 4));
           setRecommendedMove(new Move(from, to));
           console.log("Recommended Move:", { from, to });
-          dispatch({ type: "MOVE", payload: { from, to } });
+          //dispatch({ type: "MOVE", payload: { from, to } });
           return;
         }
 

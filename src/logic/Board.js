@@ -181,4 +181,18 @@ export class Board {
     // For simplicity, we assume it returns null if no en passant is available
     return null; // Implement logic to return the en passant square if available
   }
+  //=============================================
+
+  getPieces() {
+    const pieces = [];
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 8; col++) {
+        const piece = this.#squares[row][col].getPiece();
+        if (piece) {
+          pieces.push(piece);
+        }
+      }
+    }
+    return pieces;
+  }
 }

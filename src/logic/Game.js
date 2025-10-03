@@ -23,7 +23,15 @@ export class Game {
     w: { kingside: false, queenside: false },
     b: { kingside: false, queenside: false },
   };
-
+  #castlingRights = {
+    w: { kingside: true, queenside: true },
+    b: { kingside: true, queenside: true },
+  };
+  #EnPassantTargetSquare = null;
+  #halfMoveClock = 0;
+  #fullMoveNumber = 1;
+  #gameStateFen = "";
+  //===========================================
   constructor(
     playerColor = "w",
     gameMode = { type: "pve", aiLevel: "medium" }
@@ -145,7 +153,11 @@ export class Game {
     if (!piece || piece.getColor() !== this.#currentTurn) {
       return false;
     }
+    if (piece.getColor() === "b") {
+      this.#fullMoveNumber++;
+    }
 
+    this.updateFenCastlingRights(move);
     // עדכן את הכלי שנתפס במהלך
     const capturedPiece = this.#board.getPiece(move.to);
     move.capturedPiece = capturedPiece;
@@ -155,7 +167,14 @@ export class Game {
 
     this.#lastMove = move;
 
+    if (capturedPiece || piece instanceof Pawn) {
+      this.#halfMoveClock = 0;
+    } else {
+      this.#halfMoveClock++;
+    }
+
     if (piece instanceof Pawn) {
+      this.updateAnPassantTargetSquare(move);
       this.movePieceAnPassant(move, piece);
     }
 
@@ -167,6 +186,7 @@ export class Game {
     piece.incrementNumMoves();
     this.addMoveToHistory(this.#lastMove);
     this.#forwardMove = [];
+    this.gameStateToFen();
     return true;
   }
   //===========================================
@@ -272,7 +292,7 @@ export class Game {
     const legalMoves = piece.getLegalMoves(pos, this.#board);
 
     legalMoves.forEach(({ row, col }) => {
-      const move = new Move(pos, new Position(row, col), piece );
+      const move = new Move(pos, new Position(row, col), piece);
       const tempBoard = this.#board.clone();
       tempBoard.movePiece(move);
       const kingPos = tempBoard.getKingPosition(this.#currentTurn);
@@ -369,7 +389,7 @@ export class Game {
       if (
         this.#board.getSquare(new Position(row, 0)).isOccupied() &&
         this.#board.getSquare(new Position(row, 0)).getPiece() instanceof
-        Rook &&
+          Rook &&
         !this.#board.getSquare(new Position(row, 0)).getPiece()._hasMoved
       ) {
         this.#castling[this.#currentTurn].queenside = true;
@@ -422,7 +442,7 @@ export class Game {
 
   undoMove() {
     console.log("Undoing move...");
-    
+
     if (this.#moveHistory.length === 0) {
       console.error("No moves to undo.");
       return;
@@ -448,7 +468,7 @@ export class Game {
     } else {
       this.#board.setPiece(lastMove.to, null);
     }
-    
+
     // אם היה הצרחה החזר את הצריח למקומו
     if (lastMove.isCastling) {
       if (lastMove.isCastling.kingside) {
@@ -456,7 +476,7 @@ export class Game {
         this.#board.setPiece(new Position(lastMove.from.row, 7), rook);
         this.#board.setPiece(new Position(lastMove.from.row, 5), null);
         rook.decrementNumMoves();
-      }else if (lastMove.isCastling.queenside) {
+      } else if (lastMove.isCastling.queenside) {
         const rook = this.#board.getPiece(new Position(lastMove.from.row, 3));
         this.#board.setPiece(new Position(lastMove.from.row, 0), rook);
         this.#board.setPiece(new Position(lastMove.from.row, 3), null);
@@ -490,7 +510,7 @@ export class Game {
     // for (let i = 0; i < this.#forwardMove.length; i++) {
     //   const moveToRedo = this.#forwardMove[this.#forwardMove.length - 1 - i];
     //   console.log("Redoing move:", moveToRedo);
-      
+
     //   this.movePiece(moveToRedo);
     // }
 
@@ -537,14 +557,14 @@ export class Game {
     newGame.#check = { ...this.#check };
     newGame.#lastMove = this.#lastMove
       ? {
-        from: new Position(this.#lastMove.from.row, this.#lastMove.from.col),
-        to: new Position(this.#lastMove.to.row, this.#lastMove.to.col),
-        piece: this.#lastMove.piece,
-        capturedPiece: this.#lastMove.capturedPiece,
-        isEnPassant: this.#lastMove.isEnPassant,
-        isCastling: this.#lastMove.isCastling,
-        promotionType: this.#lastMove.promotionType,
-      }
+          from: new Position(this.#lastMove.from.row, this.#lastMove.from.col),
+          to: new Position(this.#lastMove.to.row, this.#lastMove.to.col),
+          piece: this.#lastMove.piece,
+          capturedPiece: this.#lastMove.capturedPiece,
+          isEnPassant: this.#lastMove.isEnPassant,
+          isCastling: this.#lastMove.isCastling,
+          promotionType: this.#lastMove.promotionType,
+        }
       : null;
     return newGame;
   }
@@ -583,5 +603,108 @@ export class Game {
 
   getMoveHistory() {
     return this.#moveHistory;
+  }
+
+  //===========================================
+  gameStateToFen() {
+    let fen = "";
+    for (let row = 0; row < 8; row++) {
+      let emptyCount = 0;
+      for (let col = 0; col < 8; col++) {
+        const piece = this.#board.getPiece(new Position(row, col));
+        if (piece) {
+          if (emptyCount > 0) {
+            fen += emptyCount;
+            emptyCount = 0;
+          }
+          fen +=
+            piece.getColor() === "w"
+              ? piece.getType().toUpperCase()
+              : piece.getType().toLowerCase();
+        } else {
+          emptyCount++;
+        }
+      }
+      if (emptyCount > 0) {
+        fen += emptyCount;
+      }
+      fen += "/";
+    }
+    fen = fen.slice(0, -1);
+    fen += " " + this.#currentTurn + " ";
+
+    fen += this.#castlingRights.w.kingside ? "K" : "-";
+    fen += this.#castlingRights.w.queenside ? "Q" : "-";
+    fen += this.#castlingRights.b.kingside ? "k" : "-";
+    fen += this.#castlingRights.b.queenside ? "q" : "-";
+
+    fen += " ";
+
+    fen += this.#EnPassantTargetSquare
+      ? this.#EnPassantTargetSquare.toChessNotation().toLowerCase()
+      : "-";
+
+    fen += ` ${this.#halfMoveClock} ${this.#fullMoveNumber}`;
+    console.log(fen);
+    this.#gameStateFen = fen.slice(0, -1);
+    return this.#gameStateFen;
+  }
+  //===========================================
+
+  updateFenCastlingRights(move) {
+    const piece = move.piece;
+    const color = piece.getColor();
+    const from = move.from;
+    const to = move.to;
+
+    const homeRow = color === "w" ? 7 : 0;
+
+    if (piece instanceof King) {
+      if (from.row === homeRow && from.col === 4) {
+        this.#castlingRights[color].kingside = false;
+        this.#castlingRights[color].queenside = false;
+      }
+    } else if (piece instanceof Rook) {
+      if (from.row === homeRow) {
+        if (from.col === 0) {
+          this.#castlingRights[color].queenside = false;
+        } else if (from.col === 7) {
+          this.#castlingRights[color].kingside = false;
+        }
+      }
+    }
+
+    const opponentColor = color === "w" ? "b" : "w";
+    const opponentHomeRow = color === "w" ? 0 : 7;
+
+    if (to.row === opponentHomeRow) {
+      if (to.col === 0) {
+        this.#castlingRights[opponentColor].queenside = false;
+      } else if (to.col === 7) {
+        this.#castlingRights[opponentColor].kingside = false;
+      }
+    }
+  }
+  //===========================================
+
+  updateAnPassantTargetSquare(move) {
+    const piece = move.piece;
+    const color = piece.getColor();
+    const from = move.from;
+    const to = move.to;
+    
+    if (piece instanceof Pawn) {
+      
+      if (from.row === 6 && to.row === 4 && color === "w") {
+        this.#EnPassantTargetSquare = new Position(5, from.col);
+        
+      } else if (from.row === 1 && to.row === 3 && color === "b") {
+        this.#EnPassantTargetSquare = new Position(2, from.col);
+      } else {
+        this.#EnPassantTargetSquare = null;
+      }
+    } else {
+      this.#EnPassantTargetSquare = null;
+    }
   }
 }
