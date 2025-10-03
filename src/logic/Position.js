@@ -19,7 +19,7 @@ export class Position {
   }
 
   toChessNotation() {
-    const file = String.fromCharCode('A'.charCodeAt(0) + this.col);
+    const file = String.fromCharCode('a'.charCodeAt(0) + this.col);
     const rank = 8 - this.row;
     return `${file}${rank}`;
   }

@@ -54,7 +54,15 @@ export class Move {
   toChessNotation() {
     const from = this.from.toChessNotation();
     const to = this.to.toChessNotation();
-    return `${from}${to}`;
+    // Convert to lowercase for standard UCI notation (e.g., e2e4, e7e8q)
+    let notation = `${from}${to}`.toLowerCase();
+    
+    // Add promotion type if this is a pawn promotion
+    if (this.promotionType) {
+      notation += this.promotionType.toLowerCase();
+    }
+    
+    return notation;
   }
 
   equals(other) {

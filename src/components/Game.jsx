@@ -4,10 +4,6 @@ import "./Game.css";
 import { Move } from "../logic/Move";
 import ChessBoardLabels from "./ChessBoardWithLabels";
 import PawnPromotion from "./PawnPromotion";
-import { Queen } from "../logic/pieces/Queen";
-import { Rook } from "../logic/pieces/Rook";
-import { Bishop } from "../logic/pieces/Bishop";
-import { Knight } from "../logic/pieces/Knight";
 import { Position } from "../logic/Position";
 
 export const TurnContext = createContext();
@@ -63,7 +59,6 @@ const GameComponent = ({
   const turnRef = React.useRef(turn);
   const timerRef = React.useRef(null);
   const bestMoveRef = React.useRef(null);
-  const aiPromoteRef = React.useRef(null);
 
   const [recommendedMove, setRecommendedMove] = useState(null);
   const [showRecommended, setShowRecommended] = useState(false);
@@ -147,7 +142,7 @@ const GameComponent = ({
 
         if (bestMove.length > 4) {
           const promotionType = bestMove.charAt(4);
-          aiPromoteRef.current = promotionType;
+          console.log("AI promotion type detected:", promotionType);
         }
 
         if (!game) {
@@ -156,7 +151,8 @@ const GameComponent = ({
         }
         const from = game.chessNotationToPos(bestMove.substring(0, 2));
         const to = game.chessNotationToPos(bestMove.substring(2, 4));
-        console.log("AI bestMove:", bestMove, "from:", from, "to:", to);
+        const promotionType = bestMove.length > 4 ? bestMove.charAt(4) : null;
+        console.log("AI bestMove:", bestMove, "from:", from, "to:", to, "promotion:", promotionType);
 
         if (!from || !to) {
           console.error("Invalid positions:", { from, to, bestMove });
@@ -175,6 +171,7 @@ const GameComponent = ({
             piece: piece,
             from: from,
             to: to,
+            promotionType: promotionType,
           },
         });
       }
@@ -332,17 +329,19 @@ const GameComponent = ({
   };
   //===========================================
   const onPromotion = (pawn, newPiece) => {
-    const pieceMap = {
-      Queen,
-      Rook,
-      Bishop,
-      Knight,
+    const pieceTypeMap = {
+      Queen: "q",
+      Rook: "r",
+      Bishop: "b",
+      Knight: "n",
     };
     //===========================================
-    const PieceClass = pieceMap[newPiece];
-    if (PieceClass && game && game.getLastMove()) {
-      const promoted = new PieceClass(pawn.getColor());
-      game.getBoard().setPiece(game.getLastMove().to, promoted);
+    const promotionType = pieceTypeMap[newPiece];
+    if (promotionType && game && game.getLastMove()) {
+      const lastMove = game.getLastMove();
+      lastMove.promotionType = promotionType;
+      game.promotePawn(lastMove.to.row, lastMove.to.col, pawn, promotionType);
+      pawn._needPromotion = false;
       setPopupPiecePromotion(null);
     }
   };
@@ -421,7 +420,7 @@ const GameComponent = ({
             recommendedMove={showRecommended ? recommendedMove : null}
           />
         )}
-        {popupPiecePromotion && !aiPromoteRef.current(
+        {popupPiecePromotion && (
           <PawnPromotion piece={popupPiecePromotion} onPromote={onPromotion} />
         )}
         <button className="button rstBtn" onClick={resetGame}>

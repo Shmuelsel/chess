@@ -1,7 +1,10 @@
 import { Board } from "./Board.js";
 import { Pawn } from "./pieces/Pawn.js";
 import { King } from "./pieces/King.js";
+import { Queen } from "./pieces/Queen.js";
 import { Rook } from "./pieces/Rook.js";
+import { Bishop } from "./pieces/Bishop.js";
+import { Knight } from "./pieces/Knight.js";
 import { Position } from "./Position.js";
 import { Move } from "./Move.js";
 
@@ -185,7 +188,8 @@ export class Game {
       ? this.#board.getPiece(to)
       : null;
 
-    this.promotePawnIfNeeded(to.row, to.col, piece);
+    // Handle pawn promotion with the promotionType from the move
+    this.promotePawnIfNeeded(to.row, to.col, piece, move.promotionType);
 
     if (
       this.#enPassant &&
@@ -385,16 +389,39 @@ export class Game {
 
   //===========================================
 
-  promotePawnIfNeeded(row, col, piece) {
+  promotePawnIfNeeded(row, col, piece, promotionType = null) {
     console.log(piece);
 
     if (
       (piece.getColor() === "w" && row === 0) ||
       (piece.getColor() === "b" && row === 7)
     ) {
-      // const promotedPiece = new Queen(piece.getColor(), "q"); // Default to Queen promotion
-      // this.#board.setPiece(row, col, promotedPiece);
-      piece._needPromotion = true;
+      // If promotionType is provided (from engine), promote immediately
+      if (promotionType) {
+        this.promotePawn(row, col, piece, promotionType);
+      } else {
+        // Otherwise, mark for UI promotion (human player)
+        piece._needPromotion = true;
+      }
+    }
+  }
+  //===========================================
+
+  promotePawn(row, col, piece, promotionType) {
+    const pieceMap = {
+      q: Queen,
+      r: Rook,
+      b: Bishop,
+      n: Knight,
+    };
+
+    const PieceClass = pieceMap[promotionType.toLowerCase()];
+    if (PieceClass) {
+      const promotedPiece = new PieceClass(piece.getColor());
+      this.#board.setPiece(new Position(row, col), promotedPiece);
+      console.log(`Pawn promoted to ${promotionType} at ${row}, ${col}`);
+    } else {
+      console.error(`Invalid promotion type: ${promotionType}`);
     }
   }
   //===========================================

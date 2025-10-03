@@ -26,4 +26,15 @@ export class Player {
   isEngine() {
     return this.#type === "engine";
   }
+
+  /**
+   * Execute a move for this player
+   * @param {Move} move - The move to execute
+   * @param {Game} game - The game instance
+   * @returns {Object} - Result object with success flag and optional promotionType
+   */
+  executeMove(move, game) {
+    // Base implementation - should be overridden by subclasses
+    return { success: true, promotionType: null };
+  }
 }
