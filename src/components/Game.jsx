@@ -59,7 +59,6 @@ const GameComponent = ({
   const turnRef = React.useRef(turn);
   const timerRef = React.useRef(null);
   const bestMoveRef = React.useRef(null);
-  const aiPromoteRef = React.useRef(null);
 
   const [recommendedMove, setRecommendedMove] = useState(null);
   const [showRecommended, setShowRecommended] = useState(false);
@@ -143,7 +142,7 @@ const GameComponent = ({
 
         if (bestMove.length > 4) {
           const promotionType = bestMove.charAt(4);
-          aiPromoteRef.current = promotionType;
+          console.log("AI promotion type detected:", promotionType);
         }
 
         if (!game) {
@@ -342,6 +341,7 @@ const GameComponent = ({
       const lastMove = game.getLastMove();
       lastMove.promotionType = promotionType;
       game.promotePawn(lastMove.to.row, lastMove.to.col, pawn, promotionType);
+      pawn._needPromotion = false;
       setPopupPiecePromotion(null);
     }
   };
@@ -420,7 +420,7 @@ const GameComponent = ({
             recommendedMove={showRecommended ? recommendedMove : null}
           />
         )}
-        {popupPiecePromotion && !aiPromoteRef.current && (
+        {popupPiecePromotion && (
           <PawnPromotion piece={popupPiecePromotion} onPromote={onPromotion} />
         )}
         <button className="button rstBtn" onClick={resetGame}>
