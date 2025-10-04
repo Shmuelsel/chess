@@ -3,13 +3,14 @@ import MainMenu from './MainMenu';
 import SettingsMenu from './SettingsMenu';
 import './App.css';
 import Game from './Game';
+import { GameMode, PlayerColor } from '../logic/gameConstants';
 
 
 const App = () => {
   const [screen, setScreen] = useState('mainMenu');
   const [timeLimit, setTimeLimit] = useState({  label: "10:00", value: 10 * 60 });
-  const [playerMode, setPlayerMode] = useState("pve");
-  const [playerColor, setPlayerColor] = useState("w");
+  const [playerMode, setPlayerMode] = useState(GameMode.PLAYER_VS_ENGINE);
+  const [playerColor, setPlayerColor] = useState(PlayerColor.WHITE);
   const [level, setLevel] = useState(2);
 
   return (

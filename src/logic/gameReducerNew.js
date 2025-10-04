@@ -1,12 +1,13 @@
 import { Game } from "./Game";
 import { Position } from "./Position";
 import { Move } from "./Move";
+import { GameMode, PlayerColor } from "./gameConstants";
 
-export const getInitialState = (playerColor = "w", playerMode = "pve") => {
-  const game = new Game(playerColor);
+export const getInitialState = (playerColor = PlayerColor.WHITE, playerMode = GameMode.PLAYER_VS_ENGINE) => {
+  const game = new Game(playerColor, playerMode);
   return {
     game: game,
-    turn: "w",
+    turn: PlayerColor.WHITE,
     selectedSquare: null,
     selectedPiece: null,
     validMoves: [],
@@ -26,8 +27,8 @@ export function gameReducer(state, action) {
 
     switch (action.type) {
       case "MOVE":
-        const { piece: movePiece, from: moveFrom, to: moveTo } = action.payload;
-        const move = new Move(moveFrom, moveTo, movePiece);
+        const { piece: movePiece, from: moveFrom, to: moveTo, promotionType } = action.payload;
+        const move = new Move(moveFrom, moveTo, movePiece, null, false, { kingside: false, queenside: false }, promotionType);
         const moveResult = game.movePiece(move);
 
         if (moveResult) {
@@ -58,7 +59,7 @@ export function gameReducer(state, action) {
           return state; // אין מהלכים לבטל
         }
 
-        if (state.playerMode === "pve") {
+        if (state.playerMode === GameMode.PLAYER_VS_ENGINE) {
           // במשחק נגד מנוע: תמיד בטל 2 מהלכים (מנוע + שחקן קודם)
           const movesToUndo = Math.min(2, state.moves.length);
 
@@ -114,7 +115,7 @@ export function gameReducer(state, action) {
           return state; // אין מהלכים לשחזר
         }
 
-        if (state.playerMode === "pve") {
+        if (state.playerMode === GameMode.PLAYER_VS_ENGINE) {
           // במשחק נגד מנוע: שחזר 2 מהלכים
           const movesToRedo = Math.min(2, state.redoMoves.length);
 
@@ -184,8 +185,8 @@ export function gameReducer(state, action) {
 
       case "RESET_GAME":
         return getInitialState(
-          action.payload?.playerColor || "w",
-          action.payload?.playerMode || "pve"
+          action.payload?.playerColor || PlayerColor.WHITE,
+          action.payload?.playerMode || GameMode.PLAYER_VS_ENGINE
         );
 
       default:
