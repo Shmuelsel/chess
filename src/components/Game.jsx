@@ -40,19 +40,6 @@ const GameComponent = ({
     lastMove,
   } = state;
 
-  // המר את selectedSquare ל-Position instance אם הוא קיים (עם memoization)
-  //   const selectedSquare = React.useMemo(() => {
-  //     if (!selectedSquareRaw) return null;
-
-  //     // אם זה כבר Position object, החזר אותו כמו שהוא
-  //     if (selectedSquareRaw instanceof Position) {
-  //       return selectedSquareRaw;
-  //     }
-
-  //     // אחרת, צור Position חדש
-  //     return new Position(selectedSquareRaw.row, selectedSquareRaw.col);
-  //   }, [selectedSquareRaw]);
-
   const [whiteClock, setWhiteClock] = React.useState(timeLimit.value);
   const [blackClock, setBlackClock] = React.useState(timeLimit.value);
   const [trigger, setTrigger] = React.useState(false);

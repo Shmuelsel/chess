@@ -4,6 +4,10 @@ import { King } from "./pieces/King.js";
 import { Rook } from "./pieces/Rook.js";
 import { Position } from "./Position.js";
 import { Move } from "./Move.js";
+import { HumanPlayer } from "./HumanPlayer.js";
+import { AiPlayer } from "./AiPlayer.js";
+import { PieceType } from "./pieceConstants.js";
+import { Piece } from "./pieces/Piece.js";
 
 export class Game {
   #board;
@@ -19,6 +23,7 @@ export class Game {
   #lastMove = null;
   #enPassant = null;
   #playerColor = "w";
+  #enemyColor = "b";
   #castling = {
     w: { kingside: false, queenside: false },
     b: { kingside: false, queenside: false },
@@ -37,12 +42,20 @@ export class Game {
     gameMode = { type: "pve", aiLevel: "medium" }
   ) {
     this.#playerColor = playerColor;
+    this.#enemyColor = playerColor === "w" ? "b" : "w";
     this.#currentTurn = "w";
     this.#board = new Board(playerColor);
     this.#kingPos = { b: { x: 4, y: 0 }, w: { x: 4, y: 7 } };
     this.#moveHistory = [];
     this.#forwardMove = [];
     this.#lastMove = null;
+    if (gameMode.type === "pve") {
+      this.#playerColor === 'w' ? this.whitePlayer = new HumanPlayer(playerColor) : this.blackPlayer = new HumanPlayer(playerColor);
+      this.#playerColor === 'w' ? this.blackPlayer = new AiPlayer(this.#enemyColor, gameMode.aiLevel) : this.whitePlayer = new AiPlayer(this.#playerColor, gameMode.aiLevel);
+    } else {
+      this.whitePlayer = new HumanPlayer("w");
+      this.blackPlayer = new HumanPlayer("b");
+    }
   }
   //===========================================
 
@@ -692,12 +705,10 @@ export class Game {
     const color = piece.getColor();
     const from = move.from;
     const to = move.to;
-    
+
     if (piece instanceof Pawn) {
-      
       if (from.row === 6 && to.row === 4 && color === "w") {
         this.#EnPassantTargetSquare = new Position(5, from.col);
-        
       } else if (from.row === 1 && to.row === 3 && color === "b") {
         this.#EnPassantTargetSquare = new Position(2, from.col);
       } else {
@@ -707,4 +718,50 @@ export class Game {
       this.#EnPassantTargetSquare = null;
     }
   }
+  //===========================================
+
+  fenToGameState(fenString) {
+    const [boardString, turn, castling, enPassant, halfMove, fullMove] = fenString.split(" ");
+    // Reset the board
+    this.#board = this.fenToBoard(boardString);
+    this.#currentTurn = turn;
+    this.#castlingRights = {
+      w: { kingside: false, queenside: false },
+      b: { kingside: false, queenside: false },
+    };
+    if (castling.includes("K")) this.#castlingRights.w.kingside = true;
+    if (castling.includes("Q")) this.#castlingRights.w.queenside = true;
+    if (castling.includes("k")) this.#castlingRights.b.kingside = true;
+    if (castling.includes("q")) this.#castlingRights.b.queenside = true;
+    this.#EnPassantTargetSquare = enPassant === "-" ? null : this.chessNotationToPos(enPassant);
+    this.#halfMoveClock = parseInt(halfMove, 10);
+    this.#fullMoveNumber = parseInt(fullMove, 10);
+  }
+  //===========================================
+
+  fenToBoard(boardString) {
+    const newBoard = new Board(this.#playerColor);
+    const rows = boardString.split("/");
+    rows.forEach((row, rowIndex) => {
+      let colIndex = 0;
+      for (const char of row) {
+        if (isNaN(char)) {
+          const piece = this.createPiece(char, rowIndex, colIndex);
+          newBoard.setPiece(piece, new Position(rowIndex, colIndex));
+          colIndex++;
+        } else {
+          colIndex += parseInt(char, 10);
+        }
+      }
+    });
+    return newBoard;
+  }
+  //===========================================
+
+  createPiece(char, row, col) {
+    const color = char === char.toUpperCase() ? "w" : "b";
+    const type = char.toLowerCase();
+    return new PieceType[type](color);
+  }
+  //===========================================
 }
