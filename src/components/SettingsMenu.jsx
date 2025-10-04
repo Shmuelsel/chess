@@ -1,11 +1,12 @@
 import React from "react";
 import "./SettingsMenu.css";
+import { GameMode, PlayerColor } from "../logic/gameConstants";
 
 const SettingsMenu = ({ onBack, onTimeChange, timeLimit, setPlayerMode, setPlayerColor, playerColor, playerMode, level, setLevel }) => {
 
   const levels = [{ label: "Easy", value: 2 }, { label: "Medium", value: 5 }, { label: "Hard", value: 8 }, { label: "Expert", value: 12 }, { label: "Master", value: 15 }];
   const timeLevels = [{ label: "05:00", value: 5 * 60 }, { label: "10:00", value: 10 * 60 }, { label: "15:00", value: 15 * 60 }, { label: "20:00", value: 20 * 60 }];
-  const playerModes = [{ label: "🕵️ vs 🕵️", value: "pvp" }, { label: "🕵️ vs 🤖", value: "pve" }];
+  const playerModes = [{ label: "🕵️ vs 🕵️", value: GameMode.PLAYER_VS_PLAYER }, { label: "🕵️ vs 🤖", value: GameMode.PLAYER_VS_ENGINE }];
   const [selectedTime, setSelectedTime] = React.useState(timeLevels.findIndex(t => t.value === timeLimit.value));
 
   const handleTimeClick = () => {
@@ -20,7 +21,7 @@ const SettingsMenu = ({ onBack, onTimeChange, timeLimit, setPlayerMode, setPlaye
   };
 
   const handlePlayerColorClick = () => {
-    setPlayerColor(prev => (prev === "w" ? "b" : "w"));
+    setPlayerColor(prev => (prev === PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE));
   };
 
   const handleLevelClick = () => {
@@ -39,9 +40,9 @@ const SettingsMenu = ({ onBack, onTimeChange, timeLimit, setPlayerMode, setPlaye
         {playerModes.findIndex(m => m.value === playerMode) === 0 ? playerModes[0].label : playerModes[1].label}
       </button>
       <button className="button player-color" onClick={handlePlayerColorClick}>
-        {playerColor === "w" ? "White" : "Black"}
+        {playerColor === PlayerColor.WHITE ? "White" : "Black"}
       </button>
-      {playerMode === "pve" && <button className="button level" onClick={handleLevelClick}>Level: {levels.find(l => l.value === level).label}</button>}
+      {playerMode === GameMode.PLAYER_VS_ENGINE && <button className="button level" onClick={handleLevelClick}>Level: {levels.find(l => l.value === level).label}</button>}
       <button className="button" onClick={onBack}>
         Back
       </button>

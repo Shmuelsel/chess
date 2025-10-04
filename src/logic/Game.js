@@ -4,6 +4,8 @@ import { King } from "./pieces/King.js";
 import { Rook } from "./pieces/Rook.js";
 import { Position } from "./Position.js";
 import { Move } from "./Move.js";
+import { HumanPlayer, EnginePlayer } from "./Player.js";
+import { GameMode, PlayerColor, getOpponentColor } from "./gameConstants.js";
 
 export class Game {
   #board;
@@ -31,18 +33,37 @@ export class Game {
   #halfMoveClock = 0;
   #fullMoveNumber = 1;
   #gameStateFen = "";
+  #whitePlayer = null;
+  #blackPlayer = null;
+  #gameMode = GameMode.PLAYER_VS_ENGINE;
   //===========================================
   constructor(
-    playerColor = "w",
-    gameMode = { type: "pve", aiLevel: "medium" }
+    playerColor = PlayerColor.WHITE,
+    gameMode = GameMode.PLAYER_VS_ENGINE
   ) {
     this.#playerColor = playerColor;
-    this.#currentTurn = "w";
+    this.#gameMode = gameMode;
+    this.#currentTurn = PlayerColor.WHITE;
     this.#board = new Board(playerColor);
     this.#kingPos = { b: { x: 4, y: 0 }, w: { x: 4, y: 7 } };
     this.#moveHistory = [];
     this.#forwardMove = [];
     this.#lastMove = null;
+
+    // Initialize players based on game mode
+    if (gameMode === GameMode.PLAYER_VS_ENGINE) {
+      // Human player is the selected color, engine is the opponent
+      this.#whitePlayer = playerColor === PlayerColor.WHITE 
+        ? new HumanPlayer(PlayerColor.WHITE)
+        : new EnginePlayer(PlayerColor.WHITE);
+      this.#blackPlayer = playerColor === PlayerColor.BLACK
+        ? new HumanPlayer(PlayerColor.BLACK)
+        : new EnginePlayer(PlayerColor.BLACK);
+    } else {
+      // Both players are human
+      this.#whitePlayer = new HumanPlayer(PlayerColor.WHITE);
+      this.#blackPlayer = new HumanPlayer(PlayerColor.BLACK);
+    }
   }
   //===========================================
 
@@ -55,7 +76,7 @@ export class Game {
     this.#board.resetBoard();
     this.#moveHistory = [];
     this.#lastMove = null;
-    this.#currentTurn = "w";
+    this.#currentTurn = PlayerColor.WHITE;
     this.#gameOver = false;
     this.#winner = null;
     this.#draw = false;
@@ -66,7 +87,7 @@ export class Game {
     if (this.isCheckmate()) {
       console.error("Checkmate! The game is over.");
       this.#gameOver = true;
-      this.#winner = this.#currentTurn === "w" ? "b" : "w";
+      this.#winner = this.#currentTurn === PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
       return true;
     } else if (this.isStalemate()) {
       console.error("Stalemate! The game is a draw.");
@@ -153,7 +174,7 @@ export class Game {
     if (!piece || piece.getColor() !== this.#currentTurn) {
       return false;
     }
-    if (piece.getColor() === "b") {
+    if (piece.getColor() === PlayerColor.BLACK) {
       this.#fullMoveNumber++;
     }
 
@@ -200,7 +221,7 @@ export class Game {
       ? this.#board.getPiece(to)
       : null;
 
-    this.promotePawnIfNeeded(to.row, to.col, piece);
+    this.promotePawnIfNeeded(to.row, to.col, piece, move.promotionType);
 
     if (
       this.#enPassant &&
@@ -271,7 +292,17 @@ export class Game {
   //===========================================
 
   switchTurn() {
-    this.#currentTurn = this.#currentTurn === "w" ? "b" : "w";
+    this.#currentTurn = this.#currentTurn === PlayerColor.WHITE ? PlayerColor.BLACK : PlayerColor.WHITE;
+  }
+  //===========================================
+
+  getCurrentPlayer() {
+    return this.#currentTurn === PlayerColor.WHITE ? this.#whitePlayer : this.#blackPlayer;
+  }
+  //===========================================
+
+  getGameMode() {
+    return this.#gameMode;
   }
   //===========================================
 
@@ -335,7 +366,7 @@ export class Game {
         Math.abs(lastMoveToCol - fromCol) === 1 &&
         piece.getColor() === this.#currentTurn
       ) {
-        if (piece.getColor() === "w") {
+        if (piece.getColor() === PlayerColor.WHITE) {
           validMoves.push(new Position(fromRow - 1, lastMoveToCol));
         } else {
           validMoves.push(new Position(fromRow + 1, lastMoveToCol));
@@ -349,7 +380,7 @@ export class Game {
 
   calcCastling(validMoves, pos, piece) {
     //add castling
-    const row = piece.getColor() === "w" ? 7 : 0;
+    const row = piece.getColor() === PlayerColor.WHITE ? 7 : 0;
     const posKingSide1 = new Position(row, 5);
     const posKingSide2 = new Position(row, 6);
     const posRookKingSide = new Position(row, 7);
@@ -400,16 +431,18 @@ export class Game {
 
   //===========================================
 
-  promotePawnIfNeeded(row, col, piece) {
+  promotePawnIfNeeded(row, col, piece, promotionType = null) {
     console.log(piece);
 
     if (
-      (piece.getColor() === "w" && row === 0) ||
-      (piece.getColor() === "b" && row === 7)
+      (piece.getColor() === PlayerColor.WHITE && row === 0) ||
+      (piece.getColor() === PlayerColor.BLACK && row === 7)
     ) {
-      // const promotedPiece = new Queen(piece.getColor(), "q"); // Default to Queen promotion
-      // this.#board.setPiece(row, col, promotedPiece);
-      piece._needPromotion = true;
+      const currentPlayer = this.getCurrentPlayer();
+      const position = new Position(row, col);
+      
+      // Use player-specific promotion handling
+      currentPlayer.handlePromotion(piece, position, this, promotionType);
     }
   }
   //===========================================
@@ -456,7 +489,7 @@ export class Game {
 
     if (lastMove.capturedPiece) {
       if (lastMove.isEnPassant) {
-        const direction = piece.getColor() === "w" ? 1 : -1;
+        const direction = piece.getColor() === PlayerColor.WHITE ? 1 : -1;
         this.#board.setPiece(
           new Position(lastMove.to.row + direction, lastMove.to.col),
           lastMove.capturedPiece
@@ -618,7 +651,7 @@ export class Game {
             emptyCount = 0;
           }
           fen +=
-            piece.getColor() === "w"
+            piece.getColor() === PlayerColor.WHITE
               ? piece.getType().toUpperCase()
               : piece.getType().toLowerCase();
         } else {
@@ -657,7 +690,7 @@ export class Game {
     const from = move.from;
     const to = move.to;
 
-    const homeRow = color === "w" ? 7 : 0;
+    const homeRow = color === PlayerColor.WHITE ? 7 : 0;
 
     if (piece instanceof King) {
       if (from.row === homeRow && from.col === 4) {
@@ -674,8 +707,8 @@ export class Game {
       }
     }
 
-    const opponentColor = color === "w" ? "b" : "w";
-    const opponentHomeRow = color === "w" ? 0 : 7;
+    const opponentColor = getOpponentColor(color);
+    const opponentHomeRow = color === PlayerColor.WHITE ? 0 : 7;
 
     if (to.row === opponentHomeRow) {
       if (to.col === 0) {
@@ -695,10 +728,10 @@ export class Game {
     
     if (piece instanceof Pawn) {
       
-      if (from.row === 6 && to.row === 4 && color === "w") {
+      if (from.row === 6 && to.row === 4 && color === PlayerColor.WHITE) {
         this.#EnPassantTargetSquare = new Position(5, from.col);
         
-      } else if (from.row === 1 && to.row === 3 && color === "b") {
+      } else if (from.row === 1 && to.row === 3 && color === PlayerColor.BLACK) {
         this.#EnPassantTargetSquare = new Position(2, from.col);
       } else {
         this.#EnPassantTargetSquare = null;

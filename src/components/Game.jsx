@@ -9,7 +9,7 @@ import { Rook } from "../logic/pieces/Rook";
 import { Bishop } from "../logic/pieces/Bishop";
 import { Knight } from "../logic/pieces/Knight";
 import { Position } from "../logic/Position";
-import { type } from "@testing-library/user-event/dist/type";
+import { GameMode, PlayerColor, getOpponentColor } from "../logic/gameConstants";
 
 export const TurnContext = createContext();
 export const useTurn = () => {
@@ -64,13 +64,11 @@ const GameComponent = ({
   const playerModeRef = React.useRef(playerMode);
   const playerColorRef = React.useRef(playerColor);
   const turnRef = React.useRef(turn);
-  const firstRender = React.useRef(true);
-  const mounted = React.useRef(false);
   const timerRef = React.useRef(null);
   const bestMoveRef = React.useRef(null);
   const aiPromoteRef = React.useRef(null);
 
-  const enemyColor = playerColor === "w" ? "b" : "w";
+  const enemyColor = getOpponentColor(playerColor);
   const [recommendedMove, setRecommendedMove] = useState(null);
   const [showRecommended, setShowRecommended] = useState(false);
   //===========================================
@@ -86,7 +84,7 @@ const GameComponent = ({
 
   React.useEffect(() => {
     game.gameStateToFen();
-    if (playerMode !== "pve") return;
+    if (playerMode !== GameMode.PLAYER_VS_ENGINE) return;
 
     const engine = new Worker(
       "/stockfish/stockfish-17.1-lite-single-03e3232.js"
@@ -118,8 +116,9 @@ const GameComponent = ({
           return;
         }
 
+        let promotionType = null;
         if (bestMove.length > 4) {
-          const promotionType = bestMove.charAt(4);
+          promotionType = bestMove.charAt(4);
           aiPromoteRef.current = promotionType;
         }
 
@@ -148,11 +147,13 @@ const GameComponent = ({
             piece: piece,
             from: from,
             to: to,
+            promotionType: promotionType,
           },
         });
       }
     };
     return () => engine.terminate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trigger]);
   //===========================================
 
@@ -178,7 +179,7 @@ const GameComponent = ({
     if (
       game &&
       game.getLastMove() &&
-      playerModeRef.current === "pve" &&
+      playerModeRef.current === GameMode.PLAYER_VS_ENGINE &&
       turnRef.current !== playerColorRef.current
     ) {
       setTimeout(() => {
@@ -192,6 +193,7 @@ const GameComponent = ({
       }, 500);
     }
     console.log("moves:", game.getMoveHistory());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [turn]);
   //===========================================
 
@@ -212,7 +214,7 @@ const GameComponent = ({
 
   const handleSquareSelection = (row, col) => {
     if (
-      playerModeRef.current === "pve" &&
+      playerModeRef.current === GameMode.PLAYER_VS_ENGINE &&
       turnRef.current !== playerColorRef.current
     ) {
       return;
@@ -263,7 +265,7 @@ const GameComponent = ({
     }
 
     if (
-      playerModeRef.current === "pve" &&
+      playerModeRef.current === GameMode.PLAYER_VS_ENGINE &&
       currentTurn !== playerColorRef.current
     ) {
       return;
@@ -320,7 +322,7 @@ const GameComponent = ({
       const diff = (now - startTimeRef.current) / 1000;
       startTimeRef.current = now;
 
-      if (turn === "w") {
+      if (turn === PlayerColor.WHITE) {
         whiteElapsedRef.current += diff;
 
         if (whiteElapsedRef.current >= 1) {
@@ -407,12 +409,12 @@ const GameComponent = ({
           </div>
         </div>
         <h3 className="turn-indicator">
-          UPDATED CODE - Current Turn: {turn === "w" ? "White" : "Black"}
+          UPDATED CODE - Current Turn: {turn === PlayerColor.WHITE ? "White" : "Black"}
         </h3>
         {game && game.getWinner() && (
           <div className="winner-popup">
             <h3 className="winner-message">
-              Winner: {game.getWinner() === "w" ? "White" : "Black"}
+              Winner: {game.getWinner() === PlayerColor.WHITE ? "White" : "Black"}
             </h3>
           </div>
         )}
@@ -434,7 +436,7 @@ const GameComponent = ({
         <button className="button rstBtn" onClick={resetGame}>
           new game
         </button>
-        {playerMode === "pve" && (
+        {playerMode === GameMode.PLAYER_VS_ENGINE && (
           <button className="button tipBtn" onClick={handleTip}>
             💡
           </button>

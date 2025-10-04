@@ -2,7 +2,6 @@ export class Square {
     row;
     col;
     piece;
-    isOccupied;
     isTreatend;
 
     constructor(row, col, piece = null) {
